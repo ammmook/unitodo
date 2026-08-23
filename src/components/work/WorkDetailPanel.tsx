@@ -74,7 +74,11 @@ export function WorkDetailPanel({
       <dl className="grid grid-cols-[84px_1fr] gap-x-2.5 gap-y-2.5 text-[12.5px] lg:grid-cols-[96px_1fr] lg:gap-y-3 lg:text-[13px]">
         <dt className="font-semibold text-ink/70">Priority</dt>
         <dd>
-          <PriorityBadge priority={work.priority} />
+          {work.status === 'completed' ? (
+            <span className="font-semibold text-ink/60">— เสร็จแล้ว</span>
+          ) : (
+            <PriorityBadge work={work} />
+          )}
         </dd>
         <dt className="font-semibold text-ink/70">ประเภท</dt>
         <dd className="font-semibold">{WORK_TYPE_STYLE[work.type].label}</dd>

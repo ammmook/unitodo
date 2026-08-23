@@ -1,10 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
-import {
-  MOCK_SUBJECTS,
-  MOCK_WORKS,
-  SIGNED_IN_USER,
-  SUBJECT_EMOJI_POOL,
-} from '../data/mockTodolist'
+import { useCallback, useMemo } from 'react'
 import type {
   AcademicTerm,
   NewSubjectDraft,
@@ -13,6 +7,7 @@ import type {
   Work,
 } from '../types/todolist'
 import { daysUntilDue, isOverdue } from '../utils/workFormatting'
+import type { TodolistStore } from './useTodolistStore'
 
 export interface SubjectProgress {
   subject: Subject
@@ -55,12 +50,12 @@ function compareByUrgency(left: Work, right: Work): number {
 }
 
 /**
- * แหล่งข้อมูลกลางของทั้งแอป — ตอนนี้เก็บใน memory, ภายหลังสลับไปเรียก API ได้ที่เดียว
- * ทุกอย่างที่คืนออกถูกกรองตามเทอมที่เลือกอยู่ (งานอิงเทอมตามวิชาที่มันสังกัดอยู่)
+ * มุมมองของข้อมูลตามเทอมที่เลือกอยู่ — คำนวณล้วน ๆ จาก store ไม่ถือ state ของตัวเอง
+ * (งานอิงเทอมตามวิชาที่มันสังกัดอยู่)
  */
-export function useTodolistData(term: AcademicTerm): TodolistData {
-  const [allWorks, setAllWorks] = useState<Work[]>(MOCK_WORKS)
-  const [allSubjects, setAllSubjects] = useState<Subject[]>(MOCK_SUBJECTS)
+export function useTodolistData(term: AcademicTerm, store: TodolistStore): TodolistData {
+  const { subjects: allSubjects, works: allWorks } = store
+  const ownerEmail = store.viewingAs?.email ?? ''
 
   const subjectsById = useMemo(
     () => new Map(allSubjects.map((subject) => [subject.id, subject])),
@@ -84,7 +79,12 @@ export function useTodolistData(term: AcademicTerm): TodolistData {
   const sortedWorks = useMemo(() => [...works].sort(compareByUrgency), [works])
 
   const statusSummary = useMemo<WorkStatusSummary>(() => {
-    const summary: WorkStatusSummary = { notStarted: 0, inProgress: 0, completed: 0, total: works.length }
+    const summary: WorkStatusSummary = {
+      notStarted: 0,
+      inProgress: 0,
+      completed: 0,
+      total: works.length,
+    }
     for (const work of works) summary[work.status] += 1
     return summary
   }, [works])
@@ -107,52 +107,32 @@ export function useTodolistData(term: AcademicTerm): TodolistData {
     [sortedWorks, upcomingWorks],
   )
 
-  const subjectProgressList = useMemo<SubjectProgress[]>(
-    () =>
-      subjects.map((subject) => {
-        const subjectWorks = works.filter((work) => work.subjectId === subject.id)
-        const completed = subjectWorks.filter((work) => work.status === 'completed').length
-        return {
-          subject,
-          totalWorks: subjectWorks.length,
-          remainingWorks: subjectWorks.length - completed,
-          overdueWorks: subjectWorks.filter((work) => isOverdue(work.dueDate, work.status)).length,
-          completedRatio: subjectWorks.length === 0 ? 0 : completed / subjectWorks.length,
-        }
-      }),
-    [subjects, works],
-  )
-
-  const addWork = useCallback((draft: NewWorkDraft): Work => {
-    const createdWork: Work = {
-      id: `work-${Date.now()}`,
-      title: draft.title.trim(),
-      subjectId: draft.subjectId,
-      type: draft.type === '' ? 'homework' : draft.type,
-      status: 'notStarted',
-      priority: draft.priority,
-      dueDate: draft.dueDate,
-      note: draft.note.trim(),
-      createdAt: new Date().toISOString(),
-      ownerEmail: SIGNED_IN_USER.email,
+  const subjectProgressList = useMemo<SubjectProgress[]>(() => {
+    const worksBySubjectId = new Map<string, Work[]>()
+    for (const work of works) {
+      const bucket = worksBySubjectId.get(work.subjectId)
+      if (bucket) bucket.push(work)
+      else worksBySubjectId.set(work.subjectId, [work])
     }
-    setAllWorks((current) => [createdWork, ...current])
-    return createdWork
-  }, [])
 
-  const updateWork = useCallback((id: string, changes: Partial<Work>) => {
-    setAllWorks((current) =>
-      current.map((work) => (work.id === id ? { ...work, ...changes } : work)),
-    )
-  }, [])
+    return subjects.map((subject) => {
+      const subjectWorks = worksBySubjectId.get(subject.id) ?? []
+      const completed = subjectWorks.filter((work) => work.status === 'completed').length
+      return {
+        subject,
+        totalWorks: subjectWorks.length,
+        remainingWorks: subjectWorks.length - completed,
+        overdueWorks: subjectWorks.filter((work) => isOverdue(work.dueDate, work.status)).length,
+        completedRatio: subjectWorks.length === 0 ? 0 : completed / subjectWorks.length,
+      }
+    })
+  }, [subjects, works])
 
-  const deleteWork = useCallback((id: string) => {
-    setAllWorks((current) => current.filter((work) => work.id !== id))
-  }, [])
-
-  const restoreWork = useCallback((work: Work) => {
-    setAllWorks((current) => [work, ...current])
-  }, [])
+  const { addWork: storeAddWork } = store
+  const addWork = useCallback(
+    (draft: NewWorkDraft) => storeAddWork(draft, ownerEmail),
+    [storeAddWork, ownerEmail],
+  )
 
   const isSubjectNameTakenInTerm = useCallback(
     (name: string, targetTerm: AcademicTerm) =>
@@ -165,18 +145,6 @@ export function useTodolistData(term: AcademicTerm): TodolistData {
     [allSubjects],
   )
 
-  const addSubject = useCallback((draft: NewSubjectDraft): Subject => {
-    const createdSubject: Subject = {
-      id: `subject-${Date.now()}`,
-      name: draft.name.trim(),
-      emoji: SUBJECT_EMOJI_POOL[Math.floor(Math.random() * SUBJECT_EMOJI_POOL.length)],
-      academicYear: draft.academicYear,
-      semester: draft.semester,
-    }
-    setAllSubjects((current) => [...current, createdSubject])
-    return createdSubject
-  }, [])
-
   return {
     works: sortedWorks,
     subjects,
@@ -187,10 +155,10 @@ export function useTodolistData(term: AcademicTerm): TodolistData {
     nextDueWork,
     subjectProgressList,
     addWork,
-    updateWork,
-    deleteWork,
-    restoreWork,
-    addSubject,
+    updateWork: store.updateWork,
+    deleteWork: store.deleteWork,
+    restoreWork: store.restoreWork,
+    addSubject: store.addSubject,
     isSubjectNameTakenInTerm,
   }
 }

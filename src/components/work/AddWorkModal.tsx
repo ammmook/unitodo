@@ -1,16 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import type {
-  AcademicTerm,
-  NewWorkDraft,
-  Subject,
-  WorkPriority,
-  WorkType,
-} from '../../types/todolist'
+import type { AcademicTerm, NewWorkDraft, Subject, WorkType } from '../../types/todolist'
 import {
-  WORK_PRIORITY_ORDER,
   WORK_PRIORITY_STYLE,
   WORK_TYPE_ORDER,
   WORK_TYPE_STYLE,
+  computeWorkPriority,
   daysUntilDue,
   todayAsInputValue,
 } from '../../utils/workFormatting'
@@ -24,8 +18,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from './formParts'
-
-const SAVE_DURATION_MS = 900
 
 interface AddWorkModalProps {
   subjects: Subject[]
@@ -63,12 +55,10 @@ export function AddWorkModal({
     subjectId: presetSubjectId,
     type: '',
     dueDate: todayAsInputValue(),
-    priority: 'medium',
     note: '',
   })
   const [errors, setErrors] = useState<WorkFormErrors>({})
   const [hasTriedSubmit, setHasTriedSubmit] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
   const updateDraft = (changes: Partial<NewWorkDraft>) => {
     const nextDraft = { ...draft, ...changes }
@@ -77,6 +67,9 @@ export function AddWorkModal({
   }
 
   const daysBeforeDue = draft.dueDate === '' ? null : daysUntilDue(draft.dueDate)
+  // งานที่เพิ่งเพิ่มมีสถานะ notStarted เสมอ
+  const previewPriority =
+    draft.dueDate === '' ? null : computeWorkPriority(draft.dueDate, 'notStarted')
 
   const handleSubmit = (event: FormEvent, requestClose: () => void) => {
     event.preventDefault()
@@ -86,17 +79,15 @@ export function AddWorkModal({
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
-    setIsSaving(true)
-    setTimeout(() => {
-      onCreated(draft)
-      requestClose()
-    }, SAVE_DURATION_MS)
+    // บันทึกแบบ optimistic — งานขึ้นบนจอทันที ส่วนการบันทึกลงชีตทำต่อเบื้องหลัง
+    onCreated(draft)
+    requestClose()
   }
 
   const hasBlockingErrors = hasTriedSubmit && Object.keys(errors).length > 0
 
   return (
-    <ModalShell labelledBy="add-work-title" onClose={onClose} dismissable={!isSaving}>
+    <ModalShell labelledBy="add-work-title" onClose={onClose}>
       {(requestClose) => (
         <FormShell onSubmit={(event) => handleSubmit(event, requestClose)}>
           <SheetGrabber />
@@ -106,7 +97,6 @@ export function AddWorkModal({
             title="เพิ่มงานใหม่"
             subtitle={`เทอม ${term.semester} / ${term.academicYear}`}
             onClose={requestClose}
-            closeDisabled={isSaving}
           />
 
           <div className="flex flex-col gap-4 overflow-y-auto px-[18px] pb-2 lg:gap-4.5 lg:px-6">
@@ -141,7 +131,7 @@ export function AddWorkModal({
                   type="text"
                   value={draft.title}
                   onChange={(event) => updateDraft({ title: event.target.value })}
-                  placeholder="เช่น Lab 3 วาดดอกกระบองเพชร"
+                  placeholder="กรอกหัวข้องานที่ต้องทำ..."
                   aria-invalid={Boolean(errors.title)}
                   aria-describedby={errors.title ? 'new-work-title-error' : undefined}
                   className={errors.title ? INVALID_INPUT_CLASS : INPUT_CLASS}
@@ -200,41 +190,36 @@ export function AddWorkModal({
             <hr className="border-0 border-t border-ink/10" />
 
             <section className="flex flex-col gap-3">
-              <FormSectionHeading step="2" title="ส่งเมื่อไหร่ · สำคัญแค่ไหน" />
-              <div className="grid items-start gap-3 lg:grid-cols-2">
-                <div className="flex flex-col gap-1.5">
-                  <label
-                    htmlFor="new-work-due"
-                    className="flex flex-col gap-1.5 text-[13px] font-bold"
-                  >
-                    กำหนดส่ง
-                    <input
-                      id="new-work-due"
-                      type="date"
-                      value={draft.dueDate}
-                      onChange={(event) => updateDraft({ dueDate: event.target.value })}
-                      aria-invalid={Boolean(errors.dueDate)}
-                      aria-describedby={errors.dueDate ? 'new-work-due-error' : undefined}
-                      className={errors.dueDate ? INVALID_INPUT_CLASS : INPUT_CLASS}
-                    />
-                  </label>
-                  <FieldError id="new-work-due-error" message={errors.dueDate} />
-                </div>
-
-                <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-                  <legend className="pb-1.5 text-[13px] font-bold">ความสำคัญ</legend>
-                  <div className="flex gap-1.5">
-                    {WORK_PRIORITY_ORDER.map((priority) => (
-                      <PriorityOption
-                        key={priority}
-                        priority={priority}
-                        isSelected={draft.priority === priority}
-                        onSelect={() => updateDraft({ priority })}
-                      />
-                    ))}
-                  </div>
-                </fieldset>
+              <FormSectionHeading step="2" title="ส่งเมื่อไหร่" />
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="new-work-due" className="flex flex-col gap-1.5 text-[13px] font-bold">
+                  กำหนดส่ง
+                  <input
+                    id="new-work-due"
+                    type="date"
+                    value={draft.dueDate}
+                    onChange={(event) => updateDraft({ dueDate: event.target.value })}
+                    aria-invalid={Boolean(errors.dueDate)}
+                    aria-describedby={errors.dueDate ? 'new-work-due-error' : undefined}
+                    className={errors.dueDate ? INVALID_INPUT_CLASS : INPUT_CLASS}
+                  />
+                </label>
+                <FieldError id="new-work-due-error" message={errors.dueDate} />
               </div>
+
+              {/* ความสำคัญคำนวณจากวันที่เหลือ ไม่ได้ให้เลือกเอง — โชว์ให้เห็นว่าจะได้ระดับไหน */}
+              {previewPriority && (
+                <p className="flex flex-wrap items-center gap-2 rounded-[14px] bg-sand px-3.5 py-3 text-[12.5px] font-semibold text-ink/80">
+                  <span>ความสำคัญที่ระบบจะให้</span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${WORK_PRIORITY_STYLE[previewPriority].badgeClass}`}
+                  >
+                    <span aria-hidden="true">{WORK_PRIORITY_STYLE[previewPriority].icon}</span>
+                    {WORK_PRIORITY_STYLE[previewPriority].label}
+                  </span>
+                  <span className="text-ink/60">ปรับให้เองเมื่อใกล้กำหนดส่ง</span>
+                </p>
+              )}
 
               {daysBeforeDue !== null && daysBeforeDue >= 0 && (
                 <p className="flex items-center gap-2.5 rounded-[14px] bg-highlight-soft px-3.5 py-3 text-[12.5px] font-semibold text-highlight-ink">
@@ -272,7 +257,6 @@ export function AddWorkModal({
           <ModalFooter
             hint="สถานะเริ่มต้น: 🕒 ยังไม่ได้ทำ"
             submitLabel="Add Work"
-            isSaving={isSaving}
             onCancel={requestClose}
           />
         </FormShell>
@@ -281,34 +265,3 @@ export function AddWorkModal({
   )
 }
 
-const SELECTED_PRIORITY_CLASS: Record<WorkPriority, string> = {
-  high: 'border-2 border-overdue bg-overdue-soft text-overdue-ink-strong',
-  medium: 'border-2 border-highlight-shadow bg-highlight-soft text-highlight-ink',
-  low: 'border-2 border-ink/40 bg-sand text-ink',
-}
-
-function PriorityOption({
-  priority,
-  isSelected,
-  onSelect,
-}: {
-  priority: WorkPriority
-  isSelected: boolean
-  onSelect: () => void
-}) {
-  const style = WORK_PRIORITY_STYLE[priority]
-  return (
-    <button
-      type="button"
-      aria-pressed={isSelected}
-      onClick={onSelect}
-      className={`min-h-13 flex-1 rounded-[15px] text-[12.5px] whitespace-nowrap transition-colors ${
-        isSelected
-          ? `font-extrabold ${SELECTED_PRIORITY_CLASS[priority]}`
-          : 'border border-ink/15 bg-white font-semibold text-ink hover:bg-sand'
-      }`}
-    >
-      {style.icon} {style.formLabel}
-    </button>
-  )
-}

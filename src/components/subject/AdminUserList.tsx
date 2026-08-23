@@ -6,8 +6,16 @@ const ROLE_BADGE =
 
 const AVATAR_TONES = ['bg-highlight-soft', 'bg-progress-soft', 'bg-done-soft', 'bg-sand']
 
+interface AdminUserListProps {
+  users: AppUser[]
+  /** อีเมลของคนที่กำลังดูข้อมูลอยู่ตอนนี้ */
+  viewingEmail: string
+  /** กดปุ่ม 👁 แล้วสวมบทเป็นผู้ใช้คนนั้นทันที */
+  onViewAs: (user: AppUser) => void
+}
+
 /** รายชื่อผู้ใช้ทั้งหมด — เห็นเฉพาะบัญชีที่ isAdmin */
-export function AdminUserList({ users }: { users: AppUser[] }) {
+export function AdminUserList({ users, viewingEmail, onViewAs }: AdminUserListProps) {
   return (
     <section aria-labelledby="admin-users-heading" className="lg:rounded-[22px] lg:border lg:border-ink/10 lg:bg-white lg:px-6 lg:py-5.5">
       <div className="mb-1 flex items-center gap-2">
@@ -51,7 +59,11 @@ export function AdminUserList({ users }: { users: AppUser[] }) {
               <td className="px-2 py-3 text-ink/75">{formatDueDate(user.signedUpAt)}</td>
               <td className="px-2 py-3 text-ink/75">{formatDueDate(user.lastSignInAt)}</td>
               <td className="px-2 py-3 text-right">
-                <ViewUserButton user={user} />
+                <ViewUserButton
+                  user={user}
+                  isCurrent={user.email === viewingEmail}
+                  onViewAs={onViewAs}
+                />
               </td>
             </tr>
           ))}
@@ -80,7 +92,11 @@ export function AdminUserList({ users }: { users: AppUser[] }) {
               </p>
               <RoleBadge isAdmin={user.isAdmin} className="mt-1.5" />
             </div>
-            <ViewUserButton user={user} />
+            <ViewUserButton
+              user={user}
+              isCurrent={user.email === viewingEmail}
+              onViewAs={onViewAs}
+            />
           </li>
         ))}
       </ul>
@@ -88,16 +104,30 @@ export function AdminUserList({ users }: { users: AppUser[] }) {
   )
 }
 
-/** ปุ่มดูข้อมูลผู้ใช้ — มือถือเป็นปุ่มไอคอนพื้นที่กด 44px · desktop มีข้อความกำกับ */
-function ViewUserButton({ user }: { user: AppUser }) {
+/** ปุ่มสวมบทเป็นผู้ใช้ — มือถือเป็นปุ่มไอคอนพื้นที่กด 44px · desktop มีข้อความกำกับ */
+function ViewUserButton({
+  user,
+  isCurrent,
+  onViewAs,
+}: {
+  user: AppUser
+  isCurrent: boolean
+  onViewAs: (user: AppUser) => void
+}) {
   return (
     <button
       type="button"
-      aria-label={`ดูข้อมูลของ ${user.email}`}
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-ink/15 bg-cream text-sm font-bold text-ink transition-[background-color,transform] hover:bg-sand active:scale-95 lg:h-9 lg:w-auto lg:px-3 lg:text-xs"
+      disabled={isCurrent}
+      aria-label={isCurrent ? `กำลังดูข้อมูลของ ${user.email} อยู่` : `ดูข้อมูลของ ${user.email}`}
+      onClick={() => onViewAs(user)}
+      className={`inline-flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border text-sm font-bold transition-[background-color,transform] active:scale-95 lg:h-9 lg:w-auto lg:px-3 lg:text-xs ${
+        isCurrent
+          ? 'cursor-default border-ink/10 bg-sand text-ink/45 active:scale-100'
+          : 'border-ink/15 bg-cream text-ink hover:bg-sand'
+      }`}
     >
       <span aria-hidden="true">👁</span>
-      <span className="hidden lg:inline">ดู</span>
+      <span className="hidden lg:inline">{isCurrent ? 'กำลังดู' : 'ดู'}</span>
     </button>
   )
 }

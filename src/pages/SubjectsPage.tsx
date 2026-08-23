@@ -10,23 +10,29 @@ type SubjectsTab = 'mySubjects' | 'adminUsers'
 interface SubjectsPageProps {
   data: TodolistData
   term: AcademicTerm
+  /** บัญชีที่ล็อกอินจริง — ใช้ตัดสินว่าเห็นแท็บ Admin ไหม */
   currentUser: AppUser
+  /** บัญชีที่กำลังดูข้อมูลอยู่ — ต่างจาก currentUser เมื่อ admin สวมบทคนอื่น */
+  viewingUser: AppUser
   allUsers: AppUser[]
   isLoading: boolean
   onAddSubject: () => void
   onAddWorkForSubject: (subjectId: string) => void
   onOpenSubjectWorks: (subjectId: string) => void
+  onViewAsUser: (user: AppUser) => void
 }
 
 export function SubjectsPage({
   data,
   term,
   currentUser,
+  viewingUser,
   allUsers,
   isLoading,
   onAddSubject,
   onAddWorkForSubject,
   onOpenSubjectWorks,
+  onViewAsUser,
 }: SubjectsPageProps) {
   const [activeTab, setActiveTab] = useState<SubjectsTab>('mySubjects')
   const showAdminTab = currentUser.isAdmin
@@ -98,7 +104,11 @@ export function SubjectsPage({
           </li>
         </ul>
       ) : (
-        <AdminUserList users={allUsers} />
+        <AdminUserList
+          users={allUsers}
+          viewingEmail={viewingUser.email}
+          onViewAs={onViewAsUser}
+        />
       )}
     </main>
   )

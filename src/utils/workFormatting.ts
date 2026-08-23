@@ -98,28 +98,58 @@ export const WORK_STATUS_STYLE: Record<WorkStatus, StatusStyle> = {
 
 export const WORK_STATUS_ORDER: WorkStatus[] = ['notStarted', 'inProgress', 'completed']
 
-export const WORK_PRIORITY_STYLE: Record<WorkPriority, { label: string; formLabel: string; icon: string; badgeClass: string }> = {
+export const WORK_PRIORITY_STYLE: Record<WorkPriority, { label: string; icon: string; badgeClass: string }> = {
+  urgent: {
+    label: 'Urgent',
+    icon: '🔥',
+    badgeClass: 'bg-overdue text-white',
+  },
   high: {
     label: 'High',
-    formLabel: 'สูง',
     icon: '▲',
     badgeClass: 'bg-overdue-soft text-overdue-ink',
   },
   medium: {
     label: 'Medium',
-    formLabel: 'กลาง',
     icon: '■',
     badgeClass: 'bg-highlight-soft text-highlight-ink',
   },
   low: {
     label: 'Low',
-    formLabel: 'ต่ำ',
     icon: '▼',
     badgeClass: 'bg-sand text-ink/75',
   },
 }
 
-export const WORK_PRIORITY_ORDER: WorkPriority[] = ['high', 'medium', 'low']
+/**
+ * ความสำคัญของงาน — คำนวณสด ๆ จากสถานะ + จำนวนวันที่เหลือ ไม่ได้เก็บไว้ในฐานข้อมูล
+ * (ถ้าเก็บไว้ ค่าจะเพี้ยนทันทีที่วันเปลี่ยน)
+ *
+ *   เสร็จแล้ว                        → null (ไม่ต้องคำนวณ)
+ *   เลยกำหนด หรือ ครบกำหนดวันนี้      → urgent เสมอ
+ *   ยังไม่ได้ทำ  เหลือ 1–2 วัน        → high
+ *                เหลือ 3 วัน          → medium
+ *                เหลือ 4 วันขึ้นไป     → low
+ *   กำลังทำ      เหลือ 1 วัน          → high
+ *                เหลือ 2–3 วัน        → medium
+ *                เหลือ 4 วันขึ้นไป     → low
+ */
+export function computeWorkPriority(isoDate: string, status: WorkStatus): WorkPriority | null {
+  if (status === 'completed') return null
+
+  const days = daysUntilDue(isoDate)
+  if (days <= 0) return 'urgent'
+
+  if (status === 'inProgress') {
+    if (days === 1) return 'high'
+    if (days <= 3) return 'medium'
+    return 'low'
+  }
+
+  if (days <= 2) return 'high'
+  if (days === 3) return 'medium'
+  return 'low'
+}
 
 export const WORK_TYPE_STYLE: Record<WorkType, { label: string; icon: string }> = {
   homework: { label: 'Homework', icon: '📓' },

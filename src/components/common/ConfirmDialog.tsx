@@ -19,9 +19,9 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <ModalShell labelledBy="confirm-dialog-title" onClose={onCancel}>
+    <ModalShell labelledBy="confirm-dialog-title" onClose={onCancel} size="dialog">
       {(requestClose) => (
-        <div className="max-w-[340px] p-6 pb-8 text-center sm:pb-6">
+        <div className="p-6 text-center">
           <span
             aria-hidden="true"
             className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-overdue-soft text-xl"

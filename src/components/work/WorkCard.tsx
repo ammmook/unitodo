@@ -81,7 +81,7 @@ export const WorkCard = memo(function WorkCard({
           </span>
         </span>
         <span className="mt-2 flex flex-wrap gap-1.5 lg:mt-0 lg:contents">
-          {!isCompleted && <PriorityBadge priority={work.priority} />}
+          <PriorityBadge work={work} />
           {overdue && <OverdueBadge overdueDays={Math.abs(daysUntilDue(work.dueDate))} />}
           <StatusBadge status={work.status} />
         </span>

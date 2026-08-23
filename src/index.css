@@ -135,6 +135,18 @@
   animation: var(--animate-shimmer);
 }
 
+/* ตัวเดียวกันแต่ใช้บนพื้นเข้ม เช่น แถบนำทางตอนโหลด */
+@utility skeleton-shimmer-dark {
+  background: linear-gradient(
+    100deg,
+    rgb(251 247 240 / 0.1) 30%,
+    rgb(251 247 240 / 0.22) 50%,
+    rgb(251 247 240 / 0.1) 70%
+  );
+  background-size: 320px 100%;
+  animation: var(--animate-shimmer);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

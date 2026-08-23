@@ -1,4 +1,4 @@
-import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/mockTodolist'
+import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/academicTerms'
 import type { AcademicTerm } from '../../types/todolist'
 
 /** โลโก้ + ชื่อแอป */

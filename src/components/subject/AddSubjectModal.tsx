@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/mockTodolist'
+import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/academicTerms'
 import type { AcademicTerm, NewSubjectDraft } from '../../types/todolist'
 import { ModalShell, SheetGrabber } from '../common/ModalShell'
 import {
@@ -12,7 +12,24 @@ import {
   ModalHeader,
 } from '../work/formParts'
 
-const SAVE_DURATION_MS = 800
+/** อีโมจิที่กดเลือกได้เลย — พิมพ์เองก็ได้ */
+const EMOJI_SUGGESTIONS = ['📘', '🧮', '🔬', '🌐', '☕', '🚀', '🎨', '🎧', '🗺️', '🏀', '🎼', '🌵']
+
+/**
+ * เก็บแค่อีโมจิตัวแรกที่พิมพ์เข้ามา
+ * ใช้ Intl.Segmenter เพราะอีโมจิหลายตัวเป็นหลาย code unit (เช่น 🗺️ = 2 ตัว + variation selector)
+ * ถ้าตัด .slice(0, 1) ตรง ๆ จะได้ตัวอักษรพิการ
+ */
+function firstGrapheme(value: string): string {
+  const text = value.trim()
+  if (text === '') return ''
+
+  if (typeof Intl !== 'undefined' && 'Segmenter' in Intl) {
+    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+    for (const segment of segmenter.segment(text)) return segment.segment
+  }
+  return [...text][0] ?? ''
+}
 
 interface AddSubjectModalProps {
   term: AcademicTerm
@@ -30,13 +47,13 @@ export function AddSubjectModal({
   onClose,
   onCreated,
 }: AddSubjectModalProps) {
-  const [draft, setDraft] = useState<NewSubjectDraft>({
+  const [draft, setDraft] = useState<NewSubjectDraft>(() => ({
     name: '',
+    emoji: EMOJI_SUGGESTIONS[Math.floor(Math.random() * EMOJI_SUGGESTIONS.length)],
     academicYear: term.academicYear,
     semester: term.semester,
-  })
+  }))
   const [nameError, setNameError] = useState<string>()
-  const [isSaving, setIsSaving] = useState(false)
 
   const trimmedName = draft.name.trim()
   const draftTerm: AcademicTerm = { academicYear: draft.academicYear, semester: draft.semester }
@@ -55,15 +72,13 @@ export function AddSubjectModal({
     }
 
     setNameError(undefined)
-    setIsSaving(true)
-    setTimeout(() => {
-      onCreated(draft)
-      requestClose()
-    }, SAVE_DURATION_MS)
+    // บันทึกแบบ optimistic — วิชาขึ้นบนจอทันที ส่วนการบันทึกลงชีตทำต่อเบื้องหลัง
+    onCreated(draft)
+    requestClose()
   }
 
   return (
-    <ModalShell labelledBy="add-subject-title" onClose={onClose} dismissable={!isSaving}>
+    <ModalShell labelledBy="add-subject-title" onClose={onClose}>
       {(requestClose) => (
         <FormShell onSubmit={(event) => handleSubmit(event, requestClose)}>
           <SheetGrabber />
@@ -73,32 +88,75 @@ export function AddSubjectModal({
             title="เพิ่มวิชาใหม่"
             subtitle={`ผูกกับบัญชี ${ownerEmail}`}
             onClose={requestClose}
-            closeDisabled={isSaving}
           />
 
           <div className="flex flex-col gap-4 overflow-y-auto px-[18px] pb-2 lg:gap-4.5 lg:px-6">
             <section className="flex flex-col gap-3">
               <FormSectionHeading step="1" title="วิชาอะไร" />
-              <label
-                htmlFor="new-subject-name"
-                className="flex flex-col gap-1.5 text-[13px] font-bold"
-              >
-                ชื่อวิชา
-                <input
-                  id="new-subject-name"
-                  type="text"
-                  value={draft.name}
-                  onChange={(event) => {
-                    setDraft({ ...draft, name: event.target.value })
-                    setNameError(undefined)
-                  }}
-                  placeholder="เช่น Golang, Finance and Accounting"
-                  aria-invalid={Boolean(nameError)}
-                  aria-describedby={nameError ? 'new-subject-name-error' : undefined}
-                  className={nameError ? INVALID_INPUT_CLASS : INPUT_CLASS}
-                />
-              </label>
+              <div className="grid grid-cols-[72px_1fr] items-end gap-3">
+                <label
+                  htmlFor="new-subject-emoji"
+                  className="flex flex-col gap-1.5 text-[13px] font-bold"
+                >
+                  อีโมจิ
+                  <input
+                    id="new-subject-emoji"
+                    type="text"
+                    value={draft.emoji}
+                    onChange={(event) =>
+                      setDraft({ ...draft, emoji: firstGrapheme(event.target.value) })
+                    }
+                    placeholder="📘"
+                    aria-describedby="new-subject-emoji-hint"
+                    className={`${INPUT_CLASS} text-center text-[22px]`}
+                  />
+                </label>
+
+                <label
+                  htmlFor="new-subject-name"
+                  className="flex flex-col gap-1.5 text-[13px] font-bold"
+                >
+                  ชื่อวิชา
+                  <input
+                    id="new-subject-name"
+                    type="text"
+                    value={draft.name}
+                    onChange={(event) => {
+                      setDraft({ ...draft, name: event.target.value })
+                      setNameError(undefined)
+                    }}
+                    placeholder="กรอกชื่อแต่ละรายวิชา..."
+                    aria-invalid={Boolean(nameError)}
+                    aria-describedby={nameError ? 'new-subject-name-error' : undefined}
+                    className={nameError ? INVALID_INPUT_CLASS : INPUT_CLASS}
+                  />
+                </label>
+              </div>
               <FieldError id="new-subject-name-error" message={nameError} />
+
+              <div className="flex flex-col gap-1.5">
+                <span id="new-subject-emoji-hint" className="text-[11.5px] text-ink/70">
+                  พิมพ์อีโมจิเองได้ หรือกดเลือกจากด้านล่าง
+                </span>
+                <div role="group" aria-label="อีโมจิที่ใช้บ่อย" className="flex flex-wrap gap-1.5">
+                  {EMOJI_SUGGESTIONS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      aria-label={`ใช้อีโมจิ ${emoji}`}
+                      aria-pressed={draft.emoji === emoji}
+                      onClick={() => setDraft({ ...draft, emoji })}
+                      className={`grid h-11 w-11 place-items-center rounded-[13px] text-[19px] transition-colors ${
+                        draft.emoji === emoji
+                          ? 'border-2 border-ink bg-sand'
+                          : 'border border-ink/15 bg-white hover:bg-sand'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </section>
 
             <hr className="border-0 border-t border-ink/10" />
@@ -151,7 +209,10 @@ export function AddSubjectModal({
               {isNameAvailable && (
                 <p className="flex items-center gap-2.5 rounded-[14px] bg-done-soft px-3.5 py-3 text-[12.5px] font-semibold text-done-ink">
                   <span aria-hidden="true">✓</span>
-                  ชื่อนี้ยังไม่มีในเทอม {draft.semester} / {draft.academicYear} — ใช้ได้เลย
+                  <span>
+                    {draft.emoji || '📘'} {trimmedName} — ยังไม่มีในเทอม {draft.semester} /{' '}
+                    {draft.academicYear} ใช้ได้เลย
+                  </span>
                 </p>
               )}
             </section>
@@ -160,7 +221,6 @@ export function AddSubjectModal({
           <ModalFooter
             hint="เพิ่มแล้วค่อยใส่งานทีหลังได้"
             submitLabel="Add Subject"
-            isSaving={isSaving}
             onCancel={requestClose}
           />
         </FormShell>

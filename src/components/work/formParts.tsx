@@ -105,11 +105,12 @@ export function FieldError({ id, message }: { id: string; message?: string }) {
 interface ModalFooterProps {
   hint: string
   submitLabel: string
-  isSaving: boolean
+  /** โชว์สปินเนอร์ระหว่างรอบันทึก — ฟอร์มที่บันทึกแบบ optimistic ไม่ต้องส่งมา */
+  isSaving?: boolean
   onCancel: () => void
 }
 
-export function ModalFooter({ hint, submitLabel, isSaving, onCancel }: ModalFooterProps) {
+export function ModalFooter({ hint, submitLabel, isSaving = false, onCancel }: ModalFooterProps) {
   return (
     <div className="mt-4 flex items-center gap-2.5 border-t border-ink/10 bg-white px-[18px] py-3.5 pb-[max(0.875rem,env(safe-area-inset-bottom))] lg:px-6 lg:py-4">
       <p className="hidden flex-1 text-[11.5px] text-ink/75 sm:block">{hint}</p>

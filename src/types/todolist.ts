@@ -2,13 +2,15 @@
 
 export type WorkStatus = 'notStarted' | 'inProgress' | 'completed'
 
-export type WorkPriority = 'high' | 'medium' | 'low'
+/** คำนวณจากสถานะ + วันที่เหลือถึงกำหนดส่ง ไม่ได้ให้ผู้ใช้เลือกเอง — ดู computeWorkPriority */
+export type WorkPriority = 'urgent' | 'high' | 'medium' | 'low'
 
 export type WorkType = 'homework' | 'assignment' | 'exam' | 'presentation'
 
 export interface Subject {
   id: string
   name: string
+  /** อีโมจิหน้าการ์ดวิชา ผู้ใช้กรอกเองตอนเพิ่มวิชา */
   emoji: string
   academicYear: number
   semester: number
@@ -20,7 +22,6 @@ export interface Work {
   subjectId: string
   type: WorkType
   status: WorkStatus
-  priority: WorkPriority
   /** ISO date (YYYY-MM-DD) */
   dueDate: string
   note: string
@@ -51,13 +52,13 @@ export interface NewWorkDraft {
   subjectId: string
   type: WorkType | ''
   dueDate: string
-  priority: WorkPriority
   note: string
 }
 
 /** ข้อมูลที่ฟอร์ม "เพิ่มวิชาใหม่" ส่งกลับมา */
 export interface NewSubjectDraft {
   name: string
+  emoji: string
   academicYear: number
   semester: number
 }

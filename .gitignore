@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 Todolist UI mockups/*
+
+# Local env — เก็บ VITE_GOOGLE_SHEET_API_URL / VITE_GOOGLE_CLIENT_ID ไว้เครื่องตัวเอง
+.env
+.env.local

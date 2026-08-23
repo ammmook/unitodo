@@ -1,5 +1,5 @@
-import type { WorkPriority, WorkStatus } from '../../types/todolist'
-import { WORK_PRIORITY_STYLE, WORK_STATUS_STYLE } from '../../utils/workFormatting'
+import type { Work, WorkStatus } from '../../types/todolist'
+import { WORK_PRIORITY_STYLE, WORK_STATUS_STYLE, computeWorkPriority } from '../../utils/workFormatting'
 
 const BADGE_BASE =
   'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold'
@@ -14,7 +14,11 @@ export function StatusBadge({ status, compact = false }: { status: WorkStatus; c
   )
 }
 
-export function PriorityBadge({ priority }: { priority: WorkPriority }) {
+/** งานที่เสร็จแล้วไม่มี priority — badge จะหายไปเองไม่ต้องเช็คจากฝั่งผู้เรียก */
+export function PriorityBadge({ work }: { work: Work }) {
+  const priority = computeWorkPriority(work.dueDate, work.status)
+  if (!priority) return null
+
   const style = WORK_PRIORITY_STYLE[priority]
   return (
     <span className={`${BADGE_BASE} ${style.badgeClass}`}>

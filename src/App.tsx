@@ -1,19 +1,24 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { AppShellSkeleton } from './components/common/LoadingSkeleton'
 import { ConfirmDialog } from './components/common/ConfirmDialog'
 import { ToastStack } from './components/common/ToastStack'
 import { AppHeader } from './components/layout/AppHeader'
+import { ImpersonationBanner } from './components/layout/ImpersonationBanner'
 import { MobileTabBar } from './components/layout/MobileTabBar'
 import { AddSubjectModal } from './components/subject/AddSubjectModal'
 import { AddWorkModal } from './components/work/AddWorkModal'
-import { CURRENT_TERM, MOCK_USERS, SIGNED_IN_USER } from './data/mockTodolist'
+import { CURRENT_TERM } from './data/academicTerms'
+import { useSession } from './hooks/useSession'
 import { useToasts } from './hooks/useToasts'
 import { useTodolistData } from './hooks/useTodolistData'
+import { clearSnapshotCache, useTodolistStore } from './hooks/useTodolistStore'
 import { AllWorksPage } from './pages/AllWorksPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import type {
   AcademicTerm,
+  AppUser,
   NewSubjectDraft,
   NewWorkDraft,
   PageName,
@@ -22,9 +27,6 @@ import type {
 } from './types/todolist'
 import { WORK_TYPE_STYLE, formatDueDate } from './utils/workFormatting'
 
-/** เวลาที่จำลองการโหลดข้อมูลครั้งแรก ให้เห็น skeleton ตาม design */
-const INITIAL_LOAD_MS = 700
-
 type OpenModal =
   | { kind: 'none' }
   | { kind: 'addWork'; presetSubjectId?: string }
@@ -32,22 +34,59 @@ type OpenModal =
   | { kind: 'confirmDeleteWork'; work: Work }
 
 export default function App() {
-  const [isSignedIn, setIsSignedIn] = useState(false)
   const [currentPage, setCurrentPage] = useState<PageName>('dashboard')
-  const [isLoading, setIsLoading] = useState(true)
   const [openModal, setOpenModal] = useState<OpenModal>({ kind: 'none' })
   const [selectedWorkId, setSelectedWorkId] = useState<string | null>(null)
   const [subjectFilterId, setSubjectFilterId] = useState<string | 'all'>('all')
   const [term, setTerm] = useState<AcademicTerm>(CURRENT_TERM)
+  /** อีเมลของคนที่ admin กำลังสวมบทอยู่ — null คือดูข้อมูลของตัวเอง */
+  const [viewAsEmail, setViewAsEmail] = useState<string | null>(null)
 
-  const data = useTodolistData(term)
+  const session = useSession()
+  const { signOut } = session
   const { toasts, showToast, dismissToast } = useToasts()
 
-  useEffect(() => {
-    if (!isSignedIn) return
-    const timeoutId = setTimeout(() => setIsLoading(false), INITIAL_LOAD_MS)
-    return () => clearTimeout(timeoutId)
-  }, [isSignedIn])
+  /** ล้างหน้าจอกลับไปเหมือนเพิ่งเข้าแอป — ใช้ทั้งตอนออกจากระบบและตอนสลับบัญชีที่ดู */
+  const resetViewState = useCallback(() => {
+    setCurrentPage('dashboard')
+    setSelectedWorkId(null)
+    setSubjectFilterId('all')
+    setOpenModal({ kind: 'none' })
+    setTerm(CURRENT_TERM)
+  }, [])
+
+  const handleSignOut = useCallback(() => {
+    clearSnapshotCache()
+    setViewAsEmail(null)
+    resetViewState()
+    signOut()
+  }, [resetViewState, signOut])
+
+  const handleSessionExpired = useCallback(() => {
+    handleSignOut()
+    showToast({
+      tone: 'error',
+      icon: '⏱',
+      title: 'เซสชันหมดอายุ',
+      description: 'เข้าสู่ระบบด้วย Google อีกครั้ง',
+    })
+  }, [handleSignOut, showToast])
+
+  const handleStoreError = useCallback(
+    (message: string) => {
+      showToast({ tone: 'error', icon: '⚠️', title: 'บันทึกไม่สำเร็จ', description: message })
+    },
+    [showToast],
+  )
+
+  const store = useTodolistStore({
+    idToken: session.idToken,
+    viewAs: viewAsEmail,
+    onError: handleStoreError,
+    onUnauthenticated: handleSessionExpired,
+  })
+
+  const data = useTodolistData(term, store)
 
   const closeModal = useCallback(() => setOpenModal({ kind: 'none' }), [])
 
@@ -145,15 +184,22 @@ export default function App() {
     openWorkDetail(data.nextDueWork.id)
   }
 
-  /** ออกจากระบบแล้วล้าง state ของหน้าจอ ให้กลับมาเหมือนเข้าใช้ครั้งแรก */
-  const handleSignOut = () => {
-    setIsSignedIn(false)
-    setIsLoading(true)
-    setCurrentPage('dashboard')
-    setSelectedWorkId(null)
-    setSubjectFilterId('all')
-    setOpenModal({ kind: 'none' })
-    setTerm(CURRENT_TERM)
+  /** admin กดปุ่ม 👁 — สวมบทเป็นผู้ใช้คนนั้นทันที เห็นและแก้ได้ทุกอย่างเหมือนเจ้าตัว */
+  const handleViewAsUser = (user: AppUser) => {
+    const isSelf = user.email === store.me?.email
+    setViewAsEmail(isSelf ? null : user.email)
+    resetViewState()
+    showToast({
+      tone: 'info',
+      icon: '👁',
+      title: isSelf ? 'กลับมาที่บัญชีของคุณ' : 'สวมบทเป็นผู้ใช้',
+      description: isSelf ? undefined : `กำลังดูข้อมูลของ ${user.email}`,
+    })
+  }
+
+  const handleExitImpersonation = () => {
+    setViewAsEmail(null)
+    resetViewState()
   }
 
   const goToSubjectWorks = (subjectId: string) => {
@@ -161,20 +207,52 @@ export default function App() {
     setCurrentPage('works')
   }
 
-  if (!isSignedIn) {
-    return <LoginPage onSignIn={() => setIsSignedIn(true)} />
+  // ต้องล็อกอิน Google ก่อนถึงจะเข้าแอปได้
+  if (session.status === 'signedOut') {
+    return <LoginPage isGoogleReady={session.isGoogleReady} authError={session.authError} />
   }
+
+  // ยังไม่รู้ว่าเราเป็นใคร — โหลดครั้งแรกเท่านั้น ครั้งต่อ ๆ ไปมี cache ให้วาดทันที
+  if (!store.me || !store.viewingAs) {
+    return store.loadError ? (
+      <LoadFailed error={store.loadError} onRetry={store.refresh} onSignOut={handleSignOut} />
+    ) : (
+      <AppShellSkeleton variant={currentPage === 'subjects' ? 'grid' : currentPage === 'works' ? 'list' : 'dashboard'} />
+    )
+  }
+
+  const isImpersonating = viewAsEmail !== null
 
   return (
     <div className="flex min-h-dvh flex-col bg-cream">
+      {isImpersonating && (
+        <ImpersonationBanner viewingUser={store.viewingAs} onExit={handleExitImpersonation} />
+      )}
+
       <AppHeader
         currentPage={currentPage}
         onNavigate={setCurrentPage}
         term={term}
         onTermChange={setTerm}
-        user={SIGNED_IN_USER}
+        user={store.viewingAs}
         onSignOut={handleSignOut}
       />
+
+      {store.loadError && (
+        <p
+          role="alert"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-overdue/30 bg-overdue-soft px-[18px] py-2.5 text-[12.5px] font-semibold text-overdue-ink-strong lg:px-8"
+        >
+          <span className="min-w-0 flex-1">ข้อมูลอาจไม่ใช่ล่าสุด · {store.loadError}</span>
+          <button
+            type="button"
+            onClick={store.refresh}
+            className="min-h-9 shrink-0 rounded-[11px] border border-overdue/40 bg-white px-3 text-[12px] font-bold"
+          >
+            ลองใหม่
+          </button>
+        </p>
+      )}
 
       <div className="flex-1">
         {currentPage === 'dashboard' && (
@@ -182,9 +260,9 @@ export default function App() {
             data={data}
             term={term}
             onTermChange={setTerm}
-            user={SIGNED_IN_USER}
+            user={store.viewingAs}
             onSignOut={handleSignOut}
-            isLoading={isLoading}
+            isLoading={store.isLoading}
             onOpenWork={openWorkDetail}
             onStartNextWork={handleStartNextWork}
             onGoToAllWorks={() => setCurrentPage('works')}
@@ -197,7 +275,7 @@ export default function App() {
             data={data}
             term={term}
             onTermChange={setTerm}
-            isLoading={isLoading}
+            isLoading={store.isLoading}
             selectedWorkId={selectedWorkId}
             onSelectWork={setSelectedWorkId}
             onToggleCompleted={handleToggleCompleted}
@@ -214,12 +292,14 @@ export default function App() {
           <SubjectsPage
             data={data}
             term={term}
-            currentUser={SIGNED_IN_USER}
-            allUsers={MOCK_USERS}
-            isLoading={isLoading}
+            currentUser={store.me}
+            viewingUser={store.viewingAs}
+            allUsers={store.users}
+            isLoading={store.isLoading}
             onAddSubject={() => setOpenModal({ kind: 'addSubject' })}
             onAddWorkForSubject={(subjectId) => setOpenModal({ kind: 'addWork', presetSubjectId: subjectId })}
             onOpenSubjectWorks={goToSubjectWorks}
+            onViewAsUser={handleViewAsUser}
           />
         )}
       </div>
@@ -239,7 +319,7 @@ export default function App() {
       {openModal.kind === 'addSubject' && (
         <AddSubjectModal
           term={term}
-          ownerEmail={SIGNED_IN_USER.email}
+          ownerEmail={store.viewingAs.email}
           isNameTaken={data.isSubjectNameTakenInTerm}
           onClose={closeModal}
           onCreated={handleCreateSubject}
@@ -258,6 +338,51 @@ export default function App() {
       )}
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />
+    </div>
+  )
+}
+
+/** จอตอนโหลดข้อมูลครั้งแรกไม่สำเร็จเลย — ยังไม่มีอะไรให้แสดงจึงเต็มจอ */
+function LoadFailed({
+  error,
+  onRetry,
+  onSignOut,
+}: {
+  error: string
+  onRetry: () => void
+  onSignOut: () => void
+}) {
+  return (
+    <div className="grid min-h-dvh place-items-center bg-cream p-5 text-center">
+      <div className="w-full max-w-[360px]">
+        <span
+          aria-hidden="true"
+          className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-[17px] bg-highlight text-[21px] font-extrabold text-ink"
+        >
+          T
+        </span>
+
+        <h1 className="text-[19px] font-extrabold">โหลดข้อมูลไม่สำเร็จ</h1>
+        <p role="alert" className="mt-2 text-[13px] text-ink/75">
+          {error}
+        </p>
+        <div className="mt-5 flex justify-center gap-2.5">
+          <button
+            type="button"
+            onClick={onRetry}
+            className="min-h-11 rounded-[13px] bg-ink px-4 text-[13px] font-bold text-white"
+          >
+            ลองใหม่
+          </button>
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="min-h-11 rounded-[13px] border border-ink/20 bg-white px-4 text-[13px] font-bold text-ink"
+          >
+            ออกจากระบบ
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
