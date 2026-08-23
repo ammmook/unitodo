@@ -8,6 +8,7 @@ import { MobileTabBar } from './components/layout/MobileTabBar'
 import { AddSubjectModal } from './components/subject/AddSubjectModal'
 import { AddWorkModal } from './components/work/AddWorkModal'
 import { CURRENT_TERM } from './data/academicTerms'
+import { api } from './lib/api'
 import { useSession } from './hooks/useSession'
 import { useToasts } from './hooks/useToasts'
 import { useTodolistData } from './hooks/useTodolistData'
@@ -43,7 +44,7 @@ export default function App() {
   const [viewAsEmail, setViewAsEmail] = useState<string | null>(null)
 
   const session = useSession()
-  const { signOut } = session
+  const { signOut, expireSession, acceptIssuedSession, confirmSignedIn, credential } = session
   const { toasts, showToast, dismissToast } = useToasts()
 
   /** ล้างหน้าจอกลับไปเหมือนเพิ่งเข้าแอป — ใช้ทั้งตอนออกจากระบบและตอนสลับบัญชีที่ดู */
@@ -56,21 +57,27 @@ export default function App() {
   }, [])
 
   const handleSignOut = useCallback(() => {
+    // เพิกถอน session ฝั่งเซิร์ฟเวอร์ด้วย ไม่ใช่แค่ลืมมันไปเฉย ๆ — ยิงแบบไม่รอผล
+    if (credential?.sessionToken) {
+      api.logout(credential).catch(() => {
+        // ออฟไลน์อยู่ก็ยังต้องออกจากระบบฝั่งนี้ได้ · session จะหมดอายุเองอยู่แล้ว
+      })
+    }
     clearSnapshotCache()
     setViewAsEmail(null)
     resetViewState()
     signOut()
-  }, [resetViewState, signOut])
+  }, [credential, resetViewState, signOut])
 
-  const handleSessionExpired = useCallback(() => {
-    handleSignOut()
-    showToast({
-      tone: 'error',
-      icon: '⏱',
-      title: 'เซสชันหมดอายุ',
-      description: 'เข้าสู่ระบบด้วย Google อีกครั้ง',
-    })
-  }, [handleSignOut, showToast])
+  const handleSessionExpired = useCallback(
+    (message?: string) => {
+      clearSnapshotCache()
+      setViewAsEmail(null)
+      resetViewState()
+      expireSession(message ?? 'เซสชันหมดอายุแล้ว กรุณาเข้าสู่ระบบอีกครั้ง')
+    },
+    [expireSession, resetViewState],
+  )
 
   const handleStoreError = useCallback(
     (message: string) => {
@@ -80,10 +87,12 @@ export default function App() {
   )
 
   const store = useTodolistStore({
-    idToken: session.idToken,
+    credential,
     viewAs: viewAsEmail,
     onError: handleStoreError,
     onUnauthenticated: handleSessionExpired,
+    onSessionIssued: acceptIssuedSession,
+    onAuthenticated: confirmSignedIn,
   })
 
   const data = useTodolistData(term, store)
@@ -208,8 +217,15 @@ export default function App() {
   }
 
   // ต้องล็อกอิน Google ก่อนถึงจะเข้าแอปได้
+  // ถ้ามี session เก่าอยู่ status จะเป็น 'checking' ตั้งแต่แรก หน้านี้จึงไม่แวบขึ้นมาก่อน
   if (session.status === 'signedOut') {
-    return <LoginPage isGoogleReady={session.isGoogleReady} authError={session.authError} />
+    return (
+      <LoginPage
+        isGoogleReady={session.isGoogleReady}
+        isAuthenticating={session.isAuthenticating}
+        authError={session.authError}
+      />
+    )
   }
 
   // ยังไม่รู้ว่าเราเป็นใคร — โหลดครั้งแรกเท่านั้น ครั้งต่อ ๆ ไปมี cache ให้วาดทันที

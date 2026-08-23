@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ApiError, api, type BootstrapPayload, type RequestContext } from '../lib/api'
+import {
+  ApiError,
+  api,
+  type BootstrapPayload,
+  type IssuedSession,
+  type RequestContext,
+} from '../lib/api'
 import type { AppUser, NewSubjectDraft, NewWorkDraft, Subject, Work } from '../types/todolist'
 
 /** ใช้เมื่อผู้ใช้ไม่ได้กรอกอีโมจิเอง */
@@ -26,11 +32,16 @@ export interface TodolistStore {
 }
 
 interface StoreOptions {
-  idToken: string | null
+  /** ตัวตนที่จะแนบไปกับคำขอ — session token ปกติ หรือ id_token ตอนล็อกอินครั้งแรก */
+  credential: RequestContext | null
   /** อีเมลที่ admin กำลังสวมบทอยู่ — null คือดูข้อมูลตัวเอง */
   viewAs: string | null
   onError: (message: string) => void
-  onUnauthenticated: () => void
+  onUnauthenticated: (message?: string) => void
+  /** backend ออก session ให้หลังล็อกอินสำเร็จ */
+  onSessionIssued: (session: IssuedSession) => void
+  /** bootstrap ผ่านแล้ว — ตัวตนที่ถืออยู่ใช้ได้จริง */
+  onAuthenticated: () => void
 }
 
 function cacheKey(viewAs: string | null) {
@@ -79,44 +90,56 @@ function newId() {
  *     ถ้าเซิร์ฟเวอร์ปฏิเสธจึงย้อนกลับคืนพร้อมแจ้งเตือน — ข้อมูลบนจอไม่หลุดจากของจริง
  */
 export function useTodolistStore({
-  idToken,
+  credential,
   viewAs,
   onError,
   onUnauthenticated,
+  onSessionIssued,
+  onAuthenticated,
 }: StoreOptions): TodolistStore {
+  // ยิง bootstrap ใหม่เมื่อ "ตัวตน" เปลี่ยนจริง ๆ ไม่ใช่ทุกครั้งที่ object ถูกสร้างใหม่
+  const credentialKey = credential
+    ? `${credential.sessionToken ?? ''}|${credential.idToken ?? ''}`
+    : ''
+
   const [snapshot, setSnapshot] = useState<BootstrapPayload | null>(() =>
-    idToken ? readCache(viewAs) : null,
+    credentialKey ? readCache(viewAs) : null,
   )
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadCount, setReloadCount] = useState(0)
 
   // สลับบัญชีที่กำลังดูอยู่ → เปลี่ยนไปใช้ cache ของคนนั้นทันทีระหว่างเรนเดอร์
   // ไม่ให้ข้อมูลของคนเก่าค้างบนจอแม้แค่เฟรมเดียว
-  const identityKey = `${idToken ? 'in' : 'out'}:${viewAs ?? 'self'}`
+  const identityKey = `${credentialKey ? 'in' : 'out'}:${viewAs ?? 'self'}`
   const [lastIdentityKey, setLastIdentityKey] = useState(identityKey)
   if (lastIdentityKey !== identityKey) {
     setLastIdentityKey(identityKey)
-    setSnapshot(idToken ? readCache(viewAs) : null)
+    setSnapshot(credentialKey ? readCache(viewAs) : null)
     setLoadError(null)
   }
 
   // callback/context ล่าสุด เก็บไว้ใน ref เพื่อไม่ให้ effect โหลดข้อมูลซ้ำโดยไม่จำเป็น
-  const handlersRef = useRef({ onError, onUnauthenticated })
-  const contextRef = useRef<RequestContext>({ idToken: idToken ?? '', viewAs })
+  const handlersRef = useRef({ onError, onUnauthenticated, onSessionIssued, onAuthenticated })
+  const contextRef = useRef<RequestContext>({ ...credential, viewAs })
   useEffect(() => {
-    handlersRef.current = { onError, onUnauthenticated }
-    contextRef.current = { idToken: idToken ?? '', viewAs }
+    handlersRef.current = { onError, onUnauthenticated, onSessionIssued, onAuthenticated }
+    contextRef.current = { ...credential, viewAs }
   })
 
   useEffect(() => {
-    if (!idToken) return
+    if (!credentialKey) return
 
     const controller = new AbortController()
 
     api
-      .bootstrap({ idToken, viewAs }, controller.signal)
+      .bootstrap(contextRef.current, controller.signal)
       .then((payload) => {
         if (controller.signal.aborted) return
+
+        // เพิ่งล็อกอินด้วย Google → เก็บ session ที่ backend ออกให้ แล้วทิ้ง id_token
+        if (payload.session) handlersRef.current.onSessionIssued(payload.session)
+        handlersRef.current.onAuthenticated()
+
         setSnapshot(payload)
         setLoadError(null)
         writeCache(viewAs, payload)
@@ -124,14 +147,14 @@ export function useTodolistStore({
       .catch((error: unknown) => {
         if (controller.signal.aborted) return
         if (error instanceof ApiError && error.code === 'UNAUTHENTICATED') {
-          handlersRef.current.onUnauthenticated()
+          handlersRef.current.onUnauthenticated(error.message)
           return
         }
         setLoadError(error instanceof Error ? error.message : 'โหลดข้อมูลไม่สำเร็จ')
       })
 
     return () => controller.abort()
-  }, [idToken, viewAs, reloadCount])
+  }, [credentialKey, viewAs, reloadCount])
 
   const refresh = useCallback(() => setReloadCount((count) => count + 1), [])
 
@@ -148,7 +171,7 @@ export function useTodolistStore({
       .catch((error: unknown) => {
         rollback()
         if (error instanceof ApiError && error.code === 'UNAUTHENTICATED') {
-          handlersRef.current.onUnauthenticated()
+          handlersRef.current.onUnauthenticated(error.message)
           return
         }
         handlersRef.current.onError(

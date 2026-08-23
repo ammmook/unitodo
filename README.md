@@ -40,7 +40,7 @@ VITE_GOOGLE_SHEET_API_URL=<Web app URL จากข้อ 2>
 VITE_GOOGLE_CLIENT_ID=<Client ID จากข้อ 1>
 ```
 
-ชีต `Users` / `Subjects` / `Works` จะถูกสร้างให้เองตอนมีคนเข้าใช้ครั้งแรก
+ชีต `Users` / `Sessions` / `Subjects` / `Works` จะถูกสร้างให้เองตอนมีคนเข้าใช้ครั้งแรก
 **ผู้ใช้คนแรกที่ล็อกอินจะได้สิทธิ์ admin อัตโนมัติ** (หรือกำหนดล่วงหน้าได้ที่ `BOOTSTRAP_ADMIN_EMAILS` ใน `code.gs`)
 
 ## หน้าจอในแอป
@@ -54,9 +54,51 @@ VITE_GOOGLE_CLIENT_ID=<Client ID จากข้อ 1>
 
 ## Authentication และสิทธิ์
 
-- ล็อกอินผ่าน Google Identity Services ได้ **ID token** มา แล้วแนบไปกับ *ทุก* คำขอ
-  backend เอา token ไปตรวจกับ Google ก่อนเสมอ — ไม่เชื่ออีเมลที่ฝั่ง client ส่งมาลอย ๆ
-- คนที่เคยล็อกอินแล้วจะถูกพากลับเข้าแอปเอง (`auto_select`) และ token จะถูกต่ออายุก่อนหมดเวลา 5 นาที
+ล็อกอินด้วย **Google Sign-In จริง** ผ่าน Google Identity Services · มีปุ่มเข้าสู่ระบบ **ปุ่มเดียวทั้งแอป**
+เป็นปุ่มมาตรฐานของ Google ตรง ๆ (ได้โลโก้/ฟอนต์/สัดส่วนตาม branding guideline) อยู่ที่ [LoginPage](src/pages/LoginPage.tsx)
+
+### Flow
+
+```
+เปิดเว็บ → มี session ที่ใช้ได้ไหม?
+            ├── มี   → skeleton สั้น ๆ → Dashboard        (ไม่เห็นหน้า Login เลย)
+            └── ไม่มี → หน้า Login
+                         ↓ [ ดำเนินการต่อด้วย Google ]
+                       Google OAuth → ได้ id_token
+                         ↓
+                       bootstrap (คำขอเดียว: ยืนยันตัวตน + ออก session + โหลดข้อมูล)
+                         ↓
+                       Dashboard
+```
+
+### session ทำงานยังไง
+
+1. ล็อกอินเสร็จได้ **Google id_token** → ส่งให้ backend **ครั้งเดียว**
+2. backend ตรวจ id_token กับ Google แล้ว**ออก session token ของตัวเอง**ให้ (สุ่ม 64 ตัวอักษร อายุ 30 วัน)
+   เก็บไว้ในชีต `Sessions`
+3. frontend **ทิ้ง id_token ทันที** ไม่เขียนลงที่ไหน · คำขอหลังจากนี้แนบแต่ session token
+4. session ต่ออายุแบบเลื่อนไปเรื่อย ๆ ทุกครั้งที่กลับมาใช้ — ใช้ต่อเนื่องก็ไม่มีวันหมดอายุ
+5. **Logout เพิกถอน session ที่เซิร์ฟเวอร์จริง ๆ** — token เดิมใช้ไม่ได้อีกแม้จะยังค้างอยู่ที่ไหน
+6. trigger รายวันเก็บกวาด session ที่หมดอายุออกจากชีตให้เอง
+
+**เปิดแท็บใหม่หรือปิดเบราว์เซอร์แล้วเปิดใหม่ก็เข้าได้ทันที** ไม่ต้องกด Google ซ้ำ
+จะเห็นหน้า Login อีกครั้งก็ต่อเมื่อ session หมดอายุหรือกด Logout เท่านั้น
+
+### เก็บอะไรไว้ที่ไหน
+
+| ที่เก็บ | เก็บอะไร |
+| --- | --- |
+| `localStorage` → `unitodo:session` | **session token ที่ backend ออกให้** — สุ่ม เพิกถอนได้ มีวันหมดอายุ |
+| ชีต `Sessions` | ทะเบียน session ทั้งหมด (เจ้าของ / วันหมดอายุ / ใช้ล่าสุด) — เพิกถอนได้จากฝั่งเซิร์ฟเวอร์ |
+| ไม่เก็บที่ไหนเลย | **รหัสผ่าน · Google id_token** — id_token ถูกใช้ครั้งเดียวตอนแลกเป็น session แล้วทิ้ง |
+
+> ทำไมไม่ใช้ httpOnly cookie: Apps Script อยู่คนละ origin กับหน้าเว็บ จึงตั้ง cookie ให้เราไม่ได้
+> และ `sessionStorage` แยกกันคนละแท็บ จึงไม่ผ่านเงื่อนไข "เปิดแท็บใหม่แล้วต้องเข้าได้เลย"
+> `localStorage` จึงเป็นทางเลือกเดียวที่เหลือ — สิ่งที่เก็บจึงเป็น token ที่เพิกถอนได้ ไม่ใช่ข้อมูลรับรองของ Google
+
+### สิทธิ์
+
+- backend ตรวจตัวตนทุกคำขอ ไม่เชื่ออีเมลที่ฝั่ง client ส่งมาลอย ๆ ไม่ว่าทางไหน
 - **ตาราง Admin เห็นได้เฉพาะบัญชีที่ `isAdmin`** — backend จะไม่ส่งรายชื่อผู้ใช้กลับมาเลยถ้าคนขอไม่ใช่ admin
   ไม่ใช่แค่ซ่อนใน UI
 - กดปุ่ม 👁 ในตาราง Admin = **สวมบทเป็นผู้ใช้คนนั้นทันที** เห็นและแก้ไขได้ทุกอย่างเหมือนเจ้าตัว
@@ -108,7 +150,7 @@ trigger รายวันทำงานเองแม้ไม่มีใค
 
 - **เพิ่มงาน** — ปุ่ม `+ Add Work` (desktop) / FAB (มือถือ) → [AddWorkModal](src/components/work/AddWorkModal.tsx) → ตรวจฟอร์ม → ปิด modal + toast "เพิ่มงานแล้ว" พร้อมปุ่ม "ดูงาน"
 - **เพิ่มวิชา** — `+ Add Subject` → [AddSubjectModal](src/components/subject/AddSubjectModal.tsx) → กรอกอีโมจิเอง (พิมพ์ได้ หรือกดเลือกจากตัวอย่าง) + ชื่อวิชา → เช็คชื่อซ้ำในเทอมเดียวกัน (เช็คซ้ำที่ backend อีกชั้น) → toast
-- **ออกจากระบบ** — กด avatar ขวาบน → [UserMenu](src/components/layout/UserMenu.tsx) → ล้าง token + cache แล้วกลับหน้า Login
+- **ออกจากระบบ** — กด avatar ขวาบน → [UserMenu](src/components/layout/UserMenu.tsx) → เพิกถอน session ที่เซิร์ฟเวอร์ + ล้าง cache + ปิด auto sign-in แล้วกลับหน้า Login
 - **เลือกเทอม** — dropdown ปีการศึกษาและเทอมบนแถบนำทาง → วิชาและงานถูกกรองตามเทอมที่เลือก
 - **เปลี่ยนสถานะ / ลบงาน** — เปิดรายละเอียดงาน → เปลี่ยนสถานะหรือกดลบ → ยืนยันใน [ConfirmDialog](src/components/common/ConfirmDialog.tsx) → toast พร้อมปุ่ม Undo (Undo เขียนกลับลงชีตจริง)
 
@@ -123,7 +165,7 @@ src/
 ├── lib/                     config · api (client คุยกับ Apps Script) · googleAuth (ห่อ GIS)
 ├── data/academicTerms.ts    ปีการศึกษา/เทอม คำนวณจากวันที่จริง
 ├── hooks/
-│   ├── useSession           สถานะล็อกอิน Google + ต่ออายุ token
+│   ├── useSession           สถานะล็อกอิน — ถือ session ของ backend, คุม loading/error ตอนยืนยันตัวตน
 │   ├── useTodolistStore     ข้อมูลจากเซิร์ฟเวอร์ + cache + optimistic update
 │   ├── useTodolistData      มุมมองตามเทอมที่เลือก (คำนวณล้วน ๆ ไม่ถือ state)
 │   └── useToasts · useMediaQuery

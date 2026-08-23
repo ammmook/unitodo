@@ -4,6 +4,8 @@ import { renderGoogleButton } from '../lib/googleAuth'
 interface LoginPageProps {
   /** GIS โหลดเสร็จหรือยัง — ระหว่างรอจะโชว์ placeholder แทนปุ่ม */
   isGoogleReady: boolean
+  /** กำลังยืนยันตัวตนกับเซิร์ฟเวอร์ — บังปุ่มไว้ไม่ให้กดซ้ำ */
+  isAuthenticating: boolean
   authError: string | null
 }
 
@@ -18,7 +20,7 @@ const BUTTON_POLL_MS = 150
 type ButtonState = 'loading' | 'ready' | 'blocked'
 
 /** หน้าเข้าสู่ระบบ — ต้องล็อกอิน Google ก่อนถึงจะเข้าแอปได้ */
-export function LoginPage({ isGoogleReady, authError }: LoginPageProps) {
+export function LoginPage({ isGoogleReady, isAuthenticating, authError }: LoginPageProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const buttonHostRef = useRef<HTMLDivElement>(null)
   const [buttonState, setButtonState] = useState<ButtonState>('loading')
@@ -84,15 +86,37 @@ export function LoginPage({ isGoogleReady, authError }: LoginPageProps) {
           มาลองจัดสรรเวลาเรียนของเรากันเถอะ
         </p>
 
-        {/* ปุ่มจริงของ Google อยู่ข้างใน — กรอบนอกทำให้เข้ากับสไตล์ปุ่มอื่นในแอป
-            host สูง 0 ตอนยังไม่มีปุ่ม จึงไม่มีทางซ้อนกับ placeholder */}
+        {/* ปุ่มจริงของ Google ปุ่มเดียวในแอป อยู่ข้างในกรอบนี้
+            กรอบนอกทำให้เข้ากับสไตล์ปุ่มอื่น · host สูง 0 ตอนยังไม่มีปุ่ม จึงไม่ซ้อนกับ placeholder */}
         <div
           ref={wrapperRef}
-          className="overflow-hidden rounded-2xl border border-ink/15 bg-white shadow-[0_4px_0_rgba(42,38,34,.12)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_6px_0_rgba(42,38,34,.14)] active:translate-y-0.5 active:shadow-[0_1px_0_rgba(42,38,34,.14)]"
+          className={`overflow-hidden rounded-2xl border border-ink/15 bg-white shadow-[0_4px_0_rgba(42,38,34,.12)] ${
+            isAuthenticating
+              ? 'pointer-events-none'
+              : 'transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_6px_0_rgba(42,38,34,.14)] active:translate-y-0.5 active:shadow-[0_1px_0_rgba(42,38,34,.14)]'
+          }`}
         >
-          <div ref={buttonHostRef} className="[&>div]:!w-full" />
+          {/* ระหว่างยืนยันตัวตน ซ่อนปุ่มไว้เลย กดซ้ำไม่ได้แน่นอน */}
+          <div
+            ref={buttonHostRef}
+            aria-hidden={isAuthenticating}
+            className={`[&>div]:!w-full ${isAuthenticating ? 'hidden' : ''}`}
+          />
 
-          {buttonState === 'loading' && (
+          {isAuthenticating && (
+            <p
+              role="status"
+              className="flex min-h-[46px] items-center justify-center gap-2 text-[13px] font-semibold text-ink/70"
+            >
+              <span
+                aria-hidden="true"
+                className="h-3.5 w-3.5 animate-spin rounded-full border-[2.5px] border-ink/15 border-t-ink/60"
+              />
+              กำลังเข้าสู่ระบบ…
+            </p>
+          )}
+
+          {!isAuthenticating && buttonState === 'loading' && (
             <p className="flex min-h-[46px] items-center justify-center gap-2 text-[13px] font-semibold text-ink/60">
               <span
                 aria-hidden="true"
@@ -102,7 +126,7 @@ export function LoginPage({ isGoogleReady, authError }: LoginPageProps) {
             </p>
           )}
 
-          {buttonState === 'blocked' && (
+          {!isAuthenticating && buttonState === 'blocked' && (
             <p className="flex min-h-[46px] items-center justify-center px-3 text-[13px] font-semibold text-overdue-ink-strong">
               Google ปฏิเสธการแสดงปุ่ม
             </p>

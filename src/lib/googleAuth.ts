@@ -96,7 +96,10 @@ export async function initGoogleAuth(
   return accountsId
 }
 
-/** วาดปุ่มจริงของ Google ลงใน container — เราซ้อนปุ่มตามดีไซน์ทับไว้ด้านบน */
+/**
+ * วาดปุ่มจริงของ Google ลงใน container — เป็นปุ่มเข้าสู่ระบบ "ปุ่มเดียว" ของทั้งแอป
+ * ใช้ปุ่มมาตรฐานของ Google ตรง ๆ จึงได้ทั้งโลโก้ ฟอนต์ และสัดส่วนตาม branding guideline
+ */
 export function renderGoogleButton(container: HTMLElement, width: number) {
   const accountsId = window.google?.accounts?.id
   if (!accountsId) return
@@ -106,7 +109,7 @@ export function renderGoogleButton(container: HTMLElement, width: number) {
     type: 'standard',
     theme: 'outline',
     size: 'large',
-    text: 'signin_with',
+    text: 'continue_with',
     shape: 'rectangular',
     logo_alignment: 'center',
     width,
@@ -121,24 +124,4 @@ export function promptSignIn() {
 /** ออกจากระบบ — ปิด auto sign-in ไม่งั้นครั้งหน้าจะเด้งกลับเข้าทันที */
 export function forgetGoogleSession() {
   window.google?.accounts?.id?.disableAutoSelect()
-}
-
-/** อ่าน exp จาก JWT เพื่อรู้ว่า token หมดอายุหรือยัง โดยไม่ต้องยิงเน็ต */
-export function readTokenExpiry(idToken: string): number | null {
-  try {
-    const payload = idToken.split('.')[1]
-    if (!payload) return null
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-    const exp = Number(JSON.parse(json).exp)
-    return Number.isFinite(exp) ? exp * 1000 : null
-  } catch {
-    return null
-  }
-}
-
-/** เหลืออายุน้อยกว่า 2 นาที ถือว่าใช้ไม่ได้แล้ว — เผื่อเวลาเดินทางของคำขอ */
-export function isTokenUsable(idToken: string | null): idToken is string {
-  if (!idToken) return false
-  const expiresAt = readTokenExpiry(idToken)
-  return expiresAt === null || expiresAt - Date.now() > 120_000
 }

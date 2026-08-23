@@ -8,6 +8,13 @@ import { API_URL } from './config'
  * ซึ่ง Apps Script ตอบไม่ได้ — ประหยัดไปหนึ่ง round-trip ต่อทุกคำขอ
  */
 
+/** session ที่ backend ออกให้ — มีเฉพาะตอนที่เพิ่งแลกมาจาก Google id_token */
+export interface IssuedSession {
+  token: string
+  /** ISO datetime */
+  expiresAt: string
+}
+
 export interface BootstrapPayload {
   /** บัญชีที่ล็อกอินจริง */
   me: AppUser
@@ -18,6 +25,7 @@ export interface BootstrapPayload {
   subjects: Subject[]
   works: Work[]
   serverTime: string
+  session?: IssuedSession
 }
 
 export type ApiErrorCode =
@@ -50,8 +58,13 @@ interface ApiEnvelope<T> {
   message?: string
 }
 
+/**
+ * ตัวตนที่แนบไปกับคำขอ — ปกติใช้ sessionToken
+ * ส่วน idToken ใช้เฉพาะคำขอแรกตอนล็อกอิน เพื่อแลกเป็น session แล้วทิ้งไป
+ */
 export interface RequestContext {
-  idToken: string
+  sessionToken?: string | null
+  idToken?: string | null
   /** อีเมลของคนที่ admin กำลังสวมบทอยู่ */
   viewAs?: string | null
 }
@@ -75,7 +88,8 @@ async function call<T>(
       body: JSON.stringify({
         ...params,
         action,
-        idToken: context.idToken,
+        sessionToken: context.sessionToken ?? '',
+        idToken: context.idToken ?? '',
         viewAs: context.viewAs ?? '',
       }),
       redirect: 'follow',
@@ -142,4 +156,7 @@ export const api = {
 
   setAdmin: (email: string, isAdmin: boolean, context: RequestContext) =>
     call<{ email: string; isAdmin: boolean }>('setAdmin', { email, isAdmin }, context),
+
+  /** ยกเลิก session ฝั่งเซิร์ฟเวอร์ — token เดิมใช้ไม่ได้อีกแม้จะยังค้างอยู่ที่ไหน */
+  logout: (context: RequestContext) => call<{ signedOut: boolean }>('logout', {}, context),
 }

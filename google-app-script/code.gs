@@ -40,19 +40,27 @@ var GOOGLE_CLIENT_ID = 'PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE.apps.googleuserco
 var BOOTSTRAP_ADMIN_EMAILS = [];
 
 /** ขยับเลขนี้ทุกครั้งที่แก้ไฟล์ — เอาไว้เช็คว่า deploy เวอร์ชันใหม่แล้วจริงผ่าน action 'ping' */
-var BACKEND_VERSION = 4;
+var BACKEND_VERSION = 5;
+
+/** อายุ session ที่ backend ออกให้ — ภายในช่วงนี้เปิดเว็บ/แท็บใหม่ไม่ต้องล็อกอินซ้ำ */
+var SESSION_TTL_DAYS = 30;
+/** ต่ออายุ session เมื่อไม่ได้ใช้มานานเกินนี้ — ไม่เขียนชีตทุกคำขอ */
+var SESSION_TOUCH_AFTER_HOURS = 12;
 
 var USERS_SHEET = 'Users';
+var SESSIONS_SHEET = 'Sessions';
 var SUBJECTS_SHEET = 'Subjects';
 var WORKS_SHEET = 'Works';
 
 var USERS_HEADERS = ['id', 'email', 'displayName', 'isAdmin', 'signedUpAt', 'lastSignInAt'];
+var SESSIONS_HEADERS = ['token', 'email', 'createdAt', 'expiresAt', 'lastSeenAt'];
 var SUBJECTS_HEADERS = ['id', 'ownerEmail', 'name', 'emoji', 'academicYear', 'semester', 'createdAt'];
 // คอลัมน์ priority ถูกคำนวณและเขียนโดยระบบ ไม่ใช่ค่าที่ผู้ใช้กรอก
 // อัปเดตทุกวันด้วย time-based trigger (recalculatePriorities) และทุกครั้งที่เพิ่ม/แก้งาน
 var WORKS_HEADERS = ['id', 'ownerEmail', 'subjectId', 'title', 'type', 'status', 'priority', 'dueDate', 'note', 'createdAt'];
 
 var U = { ID: 0, EMAIL: 1, DISPLAY_NAME: 2, IS_ADMIN: 3, SIGNED_UP_AT: 4, LAST_SIGN_IN_AT: 5 };
+var SESSION = { TOKEN: 0, EMAIL: 1, CREATED_AT: 2, EXPIRES_AT: 3, LAST_SEEN_AT: 4 };
 var S = { ID: 0, OWNER_EMAIL: 1, NAME: 2, EMOJI: 3, ACADEMIC_YEAR: 4, SEMESTER: 5, CREATED_AT: 6 };
 var W = { ID: 0, OWNER_EMAIL: 1, SUBJECT_ID: 2, TITLE: 3, TYPE: 4, STATUS: 5, PRIORITY: 6, DUE_DATE: 7, NOTE: 8, CREATED_AT: 9 };
 
@@ -91,13 +99,25 @@ function handle(params) {
       });
     }
 
-    // ตรวจตัวตนจาก Google id_token ทุก request — ไม่เชื่ออีเมลที่ client ส่งมาลอย ๆ
-    var identity = verifyIdToken(params.idToken);
-    if (!identity) {
-      return jsonResponse({ ok: false, error: 'UNAUTHENTICATED', message: 'ล็อกอิน Google ใหม่อีกครั้ง' });
+    // ตัวตนมาได้ 2 ทาง: session ที่เราออกให้เอง (ปกติ) หรือ Google id_token (ตอนล็อกอินครั้งแรก)
+    // ไม่เชื่ออีเมลที่ client ส่งมาลอย ๆ ไม่ว่าทางไหน
+    var actor = resolveActor(params);
+    if (!actor) {
+      return jsonResponse({ ok: false, error: 'UNAUTHENTICATED', message: 'กรุณาเข้าสู่ระบบใหม่อีกครั้ง' });
     }
 
-    var me = upsertUser(identity, action === 'bootstrap');
+    var me = upsertUser(actor, action === 'bootstrap');
+
+    // เพิ่งล็อกอินด้วย Google สำเร็จ → ออก session ให้ แล้ว client จะทิ้ง id_token ไปเลย
+    var issuedSession = null;
+    if (actor.viaGoogle && action === 'bootstrap') {
+      issuedSession = createSession(me.email);
+    }
+
+    if (action === 'logout') {
+      revokeSession(params.sessionToken);
+      return jsonResponse({ ok: true, data: { signedOut: true } });
+    }
 
     // admin สวมบทเป็นผู้ใช้คนอื่นได้ — อ่าน/เขียนทุกอย่างในนามคนนั้น
     var actingEmail = me.email;
@@ -111,7 +131,7 @@ function handle(params) {
 
     switch (action) {
       case 'bootstrap':
-        return jsonResponse({ ok: true, data: bootstrap(me, actingEmail) });
+        return jsonResponse({ ok: true, data: bootstrap(me, actingEmail, issuedSession) });
       case 'addSubject':
         return withLock(function () { return addSubject(params, actingEmail); });
       case 'deleteSubject':
@@ -153,6 +173,7 @@ function handle(params) {
  */
 function authorizeOnce() {
   getUsersSheet();
+  getSessionsSheet();
   getSubjectsSheet();
   getWorksSheet();
   countDailyPriorityTriggers();
@@ -171,7 +192,9 @@ function authorizeOnce() {
 //   ยังไม่ได้ทำ  เหลือ 1–2 วัน    → high · 3 วัน → medium · 4 วันขึ้นไป → low
 //   กำลังทำ      เหลือ 1 วัน      → high · 2–3 วัน → medium · 4 วันขึ้นไป → low
 
-var PRIORITY_HANDLER = 'recalculatePriorities';
+var DAILY_HANDLER = 'dailyMaintenance';
+/** ชื่อ handler เดิม — ยังต้องรู้จักไว้เพื่อถอน trigger รุ่นก่อนออกให้หมด */
+var LEGACY_DAILY_HANDLERS = ['recalculatePriorities'];
 
 /** จำนวนวันจากวันนี้ถึงกำหนดส่ง — ติดลบคือเลยกำหนด */
 function daysUntilDue(dueDate) {
@@ -260,22 +283,32 @@ function recalculatePriorities() {
 function installDailyPriorityTrigger() {
   removeDailyPriorityTrigger();
 
-  ScriptApp.newTrigger(PRIORITY_HANDLER)
+  ScriptApp.newTrigger(DAILY_HANDLER)
     .timeBased()
     .atHour(0)
     .nearMinute(15)
     .everyDays(1)
     .create();
 
-  Logger.log('ติดตั้ง trigger รายวันแล้ว — จะรัน ' + PRIORITY_HANDLER + ' ทุกวันช่วงเที่ยงคืน');
+  Logger.log('ติดตั้ง trigger รายวันแล้ว — จะรัน ' + DAILY_HANDLER + ' ทุกวันช่วงเที่ยงคืน');
   return true;
 }
 
+/** งานประจำวัน: อัปเดต priority + เก็บกวาด session ที่หมดอายุ */
+function dailyMaintenance() {
+  var changed = recalculatePriorities();
+  var removed = cleanupExpiredSessions();
+  Logger.log('งานรายวันเสร็จ · priority ' + changed + ' แถว · ลบ session ' + removed + ' รายการ');
+  return { priorityChanged: changed, sessionsRemoved: removed };
+}
+
 function removeDailyPriorityTrigger() {
+  var handlers = [DAILY_HANDLER].concat(LEGACY_DAILY_HANDLERS);
   var triggers = ScriptApp.getProjectTriggers();
   var removed = 0;
+
   for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === PRIORITY_HANDLER) {
+    if (handlers.indexOf(triggers[i].getHandlerFunction()) !== -1) {
       ScriptApp.deleteTrigger(triggers[i]);
       removed++;
     }
@@ -289,7 +322,7 @@ function countDailyPriorityTriggers() {
     var triggers = ScriptApp.getProjectTriggers();
     var count = 0;
     for (var i = 0; i < triggers.length; i++) {
-      if (triggers[i].getHandlerFunction() === PRIORITY_HANDLER) count++;
+      if (triggers[i].getHandlerFunction() === DAILY_HANDLER) count++;
     }
     return count;
   } catch (err) {
@@ -441,6 +474,130 @@ function verifyIdToken(idToken) {
   return identity;
 }
 
+/**
+ * หาว่าคำขอนี้เป็นของใคร
+ *
+ *   sessionToken — ทางปกติ ตรวจกับชีต Sessions (มี cache ช่วยไม่ให้อ่านชีตทุกครั้ง)
+ *   idToken      — เฉพาะตอนล็อกอินครั้งแรก ตรวจกับ Google แล้วแลกเป็น session
+ *
+ * คืน { email, name, viaGoogle } หรือ null ถ้าใช้ไม่ได้
+ */
+function resolveActor(params) {
+  var sessionEmail = resolveSession(params.sessionToken);
+  if (sessionEmail) {
+    return { email: sessionEmail, name: '', viaGoogle: false };
+  }
+
+  var identity = verifyIdToken(params.idToken);
+  if (identity) {
+    return { email: identity.email, name: identity.name, viaGoogle: true };
+  }
+
+  return null;
+}
+
+/** token สุ่มยาว เดาไม่ได้ — ใช้เป็นกุญแจของ session */
+function newSessionToken() {
+  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+}
+
+function sessionCacheKey(token) {
+  return 'sess:' + token;
+}
+
+/** ออก session ใหม่หลังยืนยันตัวตนกับ Google สำเร็จ */
+function createSession(email) {
+  var now = new Date();
+  var expiresAt = new Date(now.getTime() + SESSION_TTL_DAYS * 86400000);
+  var token = newSessionToken();
+
+  getSessionsSheet().appendRow([
+    token, email, now.toISOString(), expiresAt.toISOString(), now.toISOString()
+  ]);
+
+  CacheService.getScriptCache().put(
+    sessionCacheKey(token),
+    email,
+    Math.min(SESSION_TOUCH_AFTER_HOURS * 3600, 21600)
+  );
+
+  return { token: token, expiresAt: expiresAt.toISOString() };
+}
+
+/**
+ * แปลง session token เป็นอีเมล — คืน null ถ้าไม่มี หมดอายุ หรือถูก logout ไปแล้ว
+ * cache ไว้ก่อน จะได้ไม่ต้องอ่านชีต Sessions ทุกคำขอ
+ */
+function resolveSession(token) {
+  if (!token || typeof token !== 'string' || token.length < 20) return null;
+
+  var cache = CacheService.getScriptCache();
+  var cached = cache.get(sessionCacheKey(token));
+  if (cached) return cached;
+
+  var sheet = getSessionsSheet();
+  var rows = readRows(sheet);
+  var nowMs = Date.now();
+
+  for (var i = 0; i < rows.length; i++) {
+    if (String(rows[i][SESSION.TOKEN]) !== token) continue;
+
+    var expiresAtMs = Date.parse(asIsoString(rows[i][SESSION.EXPIRES_AT]));
+    if (!(expiresAtMs > nowMs)) return null;
+
+    var email = normalizeEmail(rows[i][SESSION.EMAIL]);
+    if (!email) return null;
+
+    // ต่ออายุแบบเลื่อนไปเรื่อย ๆ แต่เขียนชีตเฉพาะตอนที่ห่างจากครั้งก่อนพอสมควร
+    var lastSeenMs = Date.parse(asIsoString(rows[i][SESSION.LAST_SEEN_AT])) || 0;
+    if (nowMs - lastSeenMs > SESSION_TOUCH_AFTER_HOURS * 3600000) {
+      var now = new Date(nowMs);
+      var nextExpiry = new Date(nowMs + SESSION_TTL_DAYS * 86400000);
+      sheet.getRange(i + 2, SESSION.EXPIRES_AT + 1, 1, 2)
+        .setValues([[nextExpiry.toISOString(), now.toISOString()]]);
+    }
+
+    cache.put(sessionCacheKey(token), email, Math.min(SESSION_TOUCH_AFTER_HOURS * 3600, 21600));
+    return email;
+  }
+
+  return null;
+}
+
+/** ออกจากระบบ — ลบทิ้งทั้งในชีตและใน cache ไม่ให้เอา token เดิมกลับมาใช้ได้อีก */
+function revokeSession(token) {
+  if (!token) return false;
+
+  CacheService.getScriptCache().remove(sessionCacheKey(token));
+
+  var sheet = getSessionsSheet();
+  var rowIndex = findRowIndex(sheet, SESSION.TOKEN, token, -1, null);
+  if (rowIndex === -1) return false;
+
+  sheet.deleteRow(rowIndex);
+  return true;
+}
+
+/** เก็บกวาด session ที่หมดอายุ — ถูกเรียกจาก trigger รายวัน */
+function cleanupExpiredSessions() {
+  var sheet = getSessionsSheet();
+  var rows = readRows(sheet);
+  var nowMs = Date.now();
+  var removed = 0;
+
+  // วนถอยหลังเพื่อให้เลขแถวที่ยังไม่ได้ลบไม่เลื่อน
+  for (var i = rows.length - 1; i >= 0; i--) {
+    if (!rows[i][SESSION.TOKEN]) continue;
+    var expiresAtMs = Date.parse(asIsoString(rows[i][SESSION.EXPIRES_AT]));
+    if (expiresAtMs > nowMs) continue;
+    sheet.deleteRow(i + 2);
+    removed++;
+  }
+
+  Logger.log('ลบ session ที่หมดอายุ ' + removed + ' รายการ');
+  return removed;
+}
+
 /** หา user ในชีต ถ้ายังไม่มีก็สมัครให้เลย · touchLastSignIn = อัปเดตเวลาเข้าล่าสุด */
 function upsertUser(identity, touchLastSignIn) {
   var sheet = getUsersSheet();
@@ -463,6 +620,11 @@ function upsertUser(identity, touchLastSignIn) {
     return user;
   }
 
+  // มาด้วย session แต่หา user ไม่เจอ = แถวถูกลบไปแล้ว ไม่สร้างใหม่ให้เงียบ ๆ
+  if (!identity.viaGoogle) {
+    throw new Error('ไม่พบบัญชีผู้ใช้นี้แล้ว');
+  }
+
   // ผู้ใช้ใหม่ — คนแรกของระบบ หรือคนที่อยู่ใน BOOTSTRAP_ADMIN_EMAILS ได้เป็น admin
   var bootstrapAdmins = BOOTSTRAP_ADMIN_EMAILS.map(normalizeEmail);
   var newUser = {
@@ -483,7 +645,7 @@ function upsertUser(identity, touchLastSignIn) {
 
 // ── Bootstrap: ข้อมูลทั้งหมดในครั้งเดียว ──────────────────────────
 
-function bootstrap(me, actingEmail) {
+function bootstrap(me, actingEmail, issuedSession) {
   var viewingAs = me;
   if (actingEmail !== me.email) {
     viewingAs = findUserByEmail(actingEmail) || {
@@ -506,6 +668,11 @@ function bootstrap(me, actingEmail) {
 
   // ตารางผู้ใช้ทั้งหมด — ส่งให้เฉพาะ admin เท่านั้น
   if (me.isAdmin) payload.users = readAllUsers();
+
+  // มีเฉพาะตอนที่เพิ่งแลก id_token เป็น session — ครั้งต่อ ๆ ไป client ใช้ session เดิม
+  if (issuedSession) {
+    payload.session = issuedSession;
+  }
 
   return payload;
 }
@@ -736,6 +903,12 @@ function getOrCreateSheet(name, headers, textColumns) {
 
 function getUsersSheet() {
   return getOrCreateSheet(USERS_SHEET, USERS_HEADERS, [U.SIGNED_UP_AT, U.LAST_SIGN_IN_AT]);
+}
+
+function getSessionsSheet() {
+  return getOrCreateSheet(SESSIONS_SHEET, SESSIONS_HEADERS, [
+    SESSION.CREATED_AT, SESSION.EXPIRES_AT, SESSION.LAST_SEEN_AT
+  ]);
 }
 
 function getSubjectsSheet() {
