@@ -5,7 +5,7 @@ export type WorkStatus = 'notStarted' | 'inProgress' | 'completed'
 /** คำนวณจากสถานะ + วันที่เหลือถึงกำหนดส่ง ไม่ได้ให้ผู้ใช้เลือกเอง — ดู computeWorkPriority */
 export type WorkPriority = 'urgent' | 'high' | 'medium' | 'low'
 
-export type WorkType = 'homework' | 'assignment' | 'exam' | 'presentation' | 'project' | 'other'
+export type WorkType = 'assignment' | 'exam' | 'presentation' | 'project' | 'other'
 
 export interface Subject {
   id: string
