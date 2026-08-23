@@ -25,6 +25,10 @@ function isoDateTimeFromToday(dayOffset: number, hour: number, minute: number): 
 
 export const CURRENT_TERM: AcademicTerm = { academicYear: 2569, semester: 1 }
 
+/** ตัวเลือกในดรอปดาวน์ปีการศึกษา / เทอม */
+export const ACADEMIC_YEAR_OPTIONS = [2568, 2569, 2570]
+export const SEMESTER_OPTIONS = [1, 2, 3]
+
 export const SIGNED_IN_USER: AppUser = {
   id: 'user-narudon',
   email: SIGNED_IN_EMAIL,

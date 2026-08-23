@@ -5,7 +5,8 @@ import {
   describeDueDistance,
   formatDueDate,
 } from '../../utils/workFormatting'
-import { BrandMark, TermChip, UserAvatar } from '../layout/AppIdentity'
+import { BrandMark, TermSelector } from '../layout/AppIdentity'
+import { UserMenu } from '../layout/UserMenu'
 
 interface DashboardHeroProps {
   nextDueWork: Work | undefined
@@ -13,7 +14,9 @@ interface DashboardHeroProps {
   remainingCount: number
   overdueCount: number
   term: AcademicTerm
+  onTermChange: (term: AcademicTerm) => void
   user: AppUser
+  onSignOut: () => void
   onStartWorking: () => void
   onOpenWorkDetail: () => void
 }
@@ -25,7 +28,9 @@ export function DashboardHero({
   remainingCount,
   overdueCount,
   term,
+  onTermChange,
   user,
+  onSignOut,
   onStartWorking,
   onOpenWorkDetail,
 }: DashboardHeroProps) {
@@ -37,8 +42,8 @@ export function DashboardHero({
       <div className="mb-[18px] flex items-center justify-between gap-2.5 lg:hidden">
         <BrandMark size="sm" />
         <div className="flex items-center gap-2.5">
-          <TermChip term={term} tone="onDark" />
-          <UserAvatar user={user} />
+          <TermSelector term={term} onTermChange={onTermChange} tone="onDark" />
+          <UserMenu user={user} onSignOut={onSignOut} />
         </div>
       </div>
 

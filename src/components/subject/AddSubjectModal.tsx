@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/mockTodolist'
 import type { AcademicTerm, NewSubjectDraft } from '../../types/todolist'
 import { ModalShell, SheetGrabber } from '../common/ModalShell'
 import {
@@ -12,13 +13,11 @@ import {
 } from '../work/formParts'
 
 const SAVE_DURATION_MS = 800
-const ACADEMIC_YEAR_OPTIONS = [2569, 2570]
-const SEMESTER_OPTIONS = [1, 2, 3]
 
 interface AddSubjectModalProps {
   term: AcademicTerm
   ownerEmail: string
-  isNameTaken: (name: string) => boolean
+  isNameTaken: (name: string, term: AcademicTerm) => boolean
   onClose: () => void
   onCreated: (draft: NewSubjectDraft) => void
 }
@@ -40,7 +39,8 @@ export function AddSubjectModal({
   const [isSaving, setIsSaving] = useState(false)
 
   const trimmedName = draft.name.trim()
-  const isNameAvailable = trimmedName !== '' && !isNameTaken(trimmedName)
+  const draftTerm: AcademicTerm = { academicYear: draft.academicYear, semester: draft.semester }
+  const isNameAvailable = trimmedName !== '' && !isNameTaken(trimmedName, draftTerm)
 
   const handleSubmit = (event: FormEvent, requestClose: () => void) => {
     event.preventDefault()
@@ -49,7 +49,7 @@ export function AddSubjectModal({
       setNameError('ยังไม่ได้ใส่ชื่อวิชา')
       return
     }
-    if (isNameTaken(trimmedName)) {
+    if (isNameTaken(trimmedName, draftTerm)) {
       setNameError(`มีวิชา “${trimmedName}” ในเทอมนี้อยู่แล้ว`)
       return
     }

@@ -1,4 +1,5 @@
-import type { AcademicTerm, AppUser } from '../../types/todolist'
+import { ACADEMIC_YEAR_OPTIONS, SEMESTER_OPTIONS } from '../../data/mockTodolist'
+import type { AcademicTerm } from '../../types/todolist'
 
 /** โลโก้ + ชื่อแอป */
 export function BrandMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
@@ -16,30 +17,50 @@ export function BrandMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
   )
 }
 
-/** ปุ่มเลือกปี/เทอม — mock ไว้ก่อน ยังไม่มีเมนูให้เลือก */
-export function TermChip({ term, tone }: { term: AcademicTerm; tone: 'onDark' | 'onLight' }) {
-  const toneClass =
-    tone === 'onDark'
-      ? 'border-cream/30 text-cream hover:bg-cream/15'
-      : 'border-ink/15 bg-white text-ink hover:bg-sand'
-
-  return (
-    <button
-      type="button"
-      className={`min-h-10 rounded-xl border px-3 text-[12.5px] font-semibold whitespace-nowrap transition-colors ${toneClass}`}
-    >
-      {term.academicYear} · เทอม {term.semester} ▾
-    </button>
-  )
+interface TermSelectorProps {
+  term: AcademicTerm
+  onTermChange: (term: AcademicTerm) => void
+  tone: 'onDark' | 'onLight'
 }
 
-export function UserAvatar({ user }: { user: AppUser }) {
+/** เลือกปีการศึกษาและเทอมแยกกัน 2 dropdown — งานและวิชาจะถูกกรองตามที่เลือก */
+export function TermSelector({ term, onTermChange, tone }: TermSelectorProps) {
+  const toneClass =
+    tone === 'onDark'
+      ? 'border-cream/30 bg-transparent text-cream hover:bg-cream/15 [&>option]:bg-ink [&>option]:text-cream'
+      : 'border-ink/15 bg-white text-ink hover:bg-sand'
+
+  const selectClass = `min-h-10 min-w-0 shrink rounded-xl border px-2.5 text-[12.5px] font-semibold whitespace-nowrap transition-colors ${toneClass}`
+
   return (
-    <span
-      title={user.email}
-      className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-highlight text-[13px] font-bold text-ink"
-    >
-      {user.displayName.charAt(0).toUpperCase()}
-    </span>
+    <div className="flex min-w-0 items-center gap-1.5">
+      <select
+        aria-label="ปีการศึกษา"
+        value={term.academicYear}
+        onChange={(event) =>
+          onTermChange({ ...term, academicYear: Number(event.target.value) })
+        }
+        className={selectClass}
+      >
+        {ACADEMIC_YEAR_OPTIONS.map((year) => (
+          <option key={year} value={year}>
+            ปี {year}
+          </option>
+        ))}
+      </select>
+
+      <select
+        aria-label="เทอม"
+        value={term.semester}
+        onChange={(event) => onTermChange({ ...term, semester: Number(event.target.value) })}
+        className={selectClass}
+      >
+        {SEMESTER_OPTIONS.map((semester) => (
+          <option key={semester} value={semester}>
+            เทอม {semester}
+          </option>
+        ))}
+      </select>
+    </div>
   )
 }

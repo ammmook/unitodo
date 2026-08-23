@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton'
 import { EmptyState } from '../components/common/EmptyState'
-import { TermChip } from '../components/layout/AppIdentity'
+import { TermSelector } from '../components/layout/AppIdentity'
 import { WorkCard } from '../components/work/WorkCard'
 import { WorkDetailPanel } from '../components/work/WorkDetailPanel'
 import { WorkSearchBar, WorkStatusTabs, type StatusFilter } from '../components/work/WorkFilters'
@@ -12,6 +12,7 @@ import type { AcademicTerm, Work, WorkStatus, WorkType } from '../types/todolist
 interface AllWorksPageProps {
   data: TodolistData
   term: AcademicTerm
+  onTermChange: (term: AcademicTerm) => void
   isLoading: boolean
   selectedWorkId: string | null
   onSelectWork: (workId: string | null) => void
@@ -27,6 +28,7 @@ interface AllWorksPageProps {
 export function AllWorksPage({
   data,
   term,
+  onTermChange,
   isLoading,
   selectedWorkId,
   onSelectWork,
@@ -85,7 +87,7 @@ export function AllWorksPage({
               </span>
             </h1>
             <span className="lg:hidden">
-              <TermChip term={term} tone="onLight" />
+              <TermSelector term={term} onTermChange={onTermChange} tone="onLight" />
             </span>
             <button
               type="button"
@@ -153,14 +155,24 @@ export function AllWorksPage({
         )}
       </main>
 
-      {/* ปุ่มเพิ่มงานลอยของมือถือ */}
+      {/* ปุ่มเพิ่มงานลอยของมือถือ — ใช้ SVG เพื่อให้เครื่องหมาย + อยู่กึ่งกลางวงกลมพอดีทุกขนาดจอ */}
       <button
         type="button"
         aria-label="เพิ่มงานใหม่"
         onClick={onAddWork}
-        className="fixed right-4 bottom-[92px] z-30 h-15 w-15 rounded-full bg-ink text-[26px] font-bold text-highlight shadow-[0_12px_24px_-12px_rgba(42,38,34,.85)] transition-transform active:scale-95 lg:hidden"
+        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+96px)] z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-ink text-highlight shadow-[0_12px_24px_-12px_rgba(42,38,34,.85)] transition-transform active:scale-95 sm:h-15 sm:w-15 lg:hidden"
       >
-        +
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className="h-6 w-6 sm:h-7 sm:w-7"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
       </button>
 
       {selectedWork &&

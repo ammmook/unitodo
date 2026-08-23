@@ -13,6 +13,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import type {
+  AcademicTerm,
   NewSubjectDraft,
   NewWorkDraft,
   PageName,
@@ -37,8 +38,9 @@ export default function App() {
   const [openModal, setOpenModal] = useState<OpenModal>({ kind: 'none' })
   const [selectedWorkId, setSelectedWorkId] = useState<string | null>(null)
   const [subjectFilterId, setSubjectFilterId] = useState<string | 'all'>('all')
+  const [term, setTerm] = useState<AcademicTerm>(CURRENT_TERM)
 
-  const data = useTodolistData()
+  const data = useTodolistData(term)
   const { toasts, showToast, dismissToast } = useToasts()
 
   useEffect(() => {
@@ -143,6 +145,17 @@ export default function App() {
     openWorkDetail(data.nextDueWork.id)
   }
 
+  /** ออกจากระบบแล้วล้าง state ของหน้าจอ ให้กลับมาเหมือนเข้าใช้ครั้งแรก */
+  const handleSignOut = () => {
+    setIsSignedIn(false)
+    setIsLoading(true)
+    setCurrentPage('dashboard')
+    setSelectedWorkId(null)
+    setSubjectFilterId('all')
+    setOpenModal({ kind: 'none' })
+    setTerm(CURRENT_TERM)
+  }
+
   const goToSubjectWorks = (subjectId: string) => {
     setSubjectFilterId(subjectId)
     setCurrentPage('works')
@@ -157,16 +170,20 @@ export default function App() {
       <AppHeader
         currentPage={currentPage}
         onNavigate={setCurrentPage}
-        term={CURRENT_TERM}
+        term={term}
+        onTermChange={setTerm}
         user={SIGNED_IN_USER}
+        onSignOut={handleSignOut}
       />
 
       <div className="flex-1">
         {currentPage === 'dashboard' && (
           <DashboardPage
             data={data}
-            term={CURRENT_TERM}
+            term={term}
+            onTermChange={setTerm}
             user={SIGNED_IN_USER}
+            onSignOut={handleSignOut}
             isLoading={isLoading}
             onOpenWork={openWorkDetail}
             onStartNextWork={handleStartNextWork}
@@ -178,7 +195,8 @@ export default function App() {
         {currentPage === 'works' && (
           <AllWorksPage
             data={data}
-            term={CURRENT_TERM}
+            term={term}
+            onTermChange={setTerm}
             isLoading={isLoading}
             selectedWorkId={selectedWorkId}
             onSelectWork={setSelectedWorkId}
@@ -195,7 +213,7 @@ export default function App() {
         {currentPage === 'subjects' && (
           <SubjectsPage
             data={data}
-            term={CURRENT_TERM}
+            term={term}
             currentUser={SIGNED_IN_USER}
             allUsers={MOCK_USERS}
             isLoading={isLoading}
@@ -211,7 +229,7 @@ export default function App() {
       {openModal.kind === 'addWork' && (
         <AddWorkModal
           subjects={data.subjects}
-          term={CURRENT_TERM}
+          term={term}
           presetSubjectId={openModal.presetSubjectId}
           onClose={closeModal}
           onCreated={handleCreateWork}
@@ -220,9 +238,9 @@ export default function App() {
 
       {openModal.kind === 'addSubject' && (
         <AddSubjectModal
-          term={CURRENT_TERM}
+          term={term}
           ownerEmail={SIGNED_IN_USER.email}
-          isNameTaken={data.hasSubjectName}
+          isNameTaken={data.isSubjectNameTakenInTerm}
           onClose={closeModal}
           onCreated={handleCreateSubject}
         />

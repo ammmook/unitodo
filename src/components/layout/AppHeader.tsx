@@ -1,16 +1,26 @@
 import type { AcademicTerm, AppUser, PageName } from '../../types/todolist'
-import { BrandMark, TermChip, UserAvatar } from './AppIdentity'
+import { BrandMark, TermSelector } from './AppIdentity'
+import { UserMenu } from './UserMenu'
 import { PAGE_TABS } from './navigationTabs'
 
 interface AppHeaderProps {
   currentPage: PageName
   onNavigate: (page: PageName) => void
   term: AcademicTerm
+  onTermChange: (term: AcademicTerm) => void
   user: AppUser
+  onSignOut: () => void
 }
 
 /** แถบนำทางบนสุดของ desktop — mobile ใช้ MobileTabBar แทน */
-export function AppHeader({ currentPage, onNavigate, term, user }: AppHeaderProps) {
+export function AppHeader({
+  currentPage,
+  onNavigate,
+  term,
+  onTermChange,
+  user,
+  onSignOut,
+}: AppHeaderProps) {
   return (
     <div className="hidden items-center justify-between gap-4 bg-ink px-8 py-4 text-cream lg:flex">
       <div className="flex items-center gap-[18px]">
@@ -23,6 +33,7 @@ export function AppHeader({ currentPage, onNavigate, term, user }: AppHeaderProp
                 key={tab.page}
                 type="button"
                 aria-current={isCurrent ? 'page' : undefined}
+                title={tab.description}
                 onClick={() => onNavigate(tab.page)}
                 className={`rounded-[10px] px-4 py-2.5 text-[13px] transition-colors ${
                   isCurrent
@@ -37,8 +48,8 @@ export function AppHeader({ currentPage, onNavigate, term, user }: AppHeaderProp
         </nav>
       </div>
       <div className="flex items-center gap-3">
-        <TermChip term={term} tone="onDark" />
-        <UserAvatar user={user} />
+        <TermSelector term={term} onTermChange={onTermChange} tone="onDark" />
+        <UserMenu user={user} onSignOut={onSignOut} />
       </div>
     </div>
   )

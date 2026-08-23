@@ -6,6 +6,7 @@ import {
   SUBJECT_EMOJI_POOL,
 } from '../data/mockTodolist'
 import type {
+  AcademicTerm,
   NewSubjectDraft,
   NewWorkDraft,
   Subject,
@@ -42,7 +43,7 @@ export interface TodolistData {
   deleteWork: (id: string) => void
   restoreWork: (work: Work) => void
   addSubject: (draft: NewSubjectDraft) => Subject
-  hasSubjectName: (name: string) => boolean
+  isSubjectNameTakenInTerm: (name: string, term: AcademicTerm) => boolean
 }
 
 /** เรียงงานตามความเร่งด่วน: ยังไม่เสร็จก่อน แล้วค่อยเรียงตามกำหนดส่ง */
@@ -53,15 +54,32 @@ function compareByUrgency(left: Work, right: Work): number {
   return left.dueDate.localeCompare(right.dueDate)
 }
 
-/** แหล่งข้อมูลกลางของทั้งแอป — ตอนนี้เก็บใน memory, ภายหลังสลับไปเรียก API ได้ที่เดียว */
-export function useTodolistData(): TodolistData {
-  const [works, setWorks] = useState<Work[]>(MOCK_WORKS)
-  const [subjects, setSubjects] = useState<Subject[]>(MOCK_SUBJECTS)
+/**
+ * แหล่งข้อมูลกลางของทั้งแอป — ตอนนี้เก็บใน memory, ภายหลังสลับไปเรียก API ได้ที่เดียว
+ * ทุกอย่างที่คืนออกถูกกรองตามเทอมที่เลือกอยู่ (งานอิงเทอมตามวิชาที่มันสังกัดอยู่)
+ */
+export function useTodolistData(term: AcademicTerm): TodolistData {
+  const [allWorks, setAllWorks] = useState<Work[]>(MOCK_WORKS)
+  const [allSubjects, setAllSubjects] = useState<Subject[]>(MOCK_SUBJECTS)
 
   const subjectsById = useMemo(
-    () => new Map(subjects.map((subject) => [subject.id, subject])),
-    [subjects],
+    () => new Map(allSubjects.map((subject) => [subject.id, subject])),
+    [allSubjects],
   )
+
+  const subjects = useMemo(
+    () =>
+      allSubjects.filter(
+        (subject) =>
+          subject.academicYear === term.academicYear && subject.semester === term.semester,
+      ),
+    [allSubjects, term.academicYear, term.semester],
+  )
+
+  const works = useMemo(() => {
+    const subjectIdsInTerm = new Set(subjects.map((subject) => subject.id))
+    return allWorks.filter((work) => subjectIdsInTerm.has(work.subjectId))
+  }, [allWorks, subjects])
 
   const sortedWorks = useMemo(() => [...works].sort(compareByUrgency), [works])
 
@@ -118,30 +136,33 @@ export function useTodolistData(): TodolistData {
       createdAt: new Date().toISOString(),
       ownerEmail: SIGNED_IN_USER.email,
     }
-    setWorks((current) => [createdWork, ...current])
+    setAllWorks((current) => [createdWork, ...current])
     return createdWork
   }, [])
 
   const updateWork = useCallback((id: string, changes: Partial<Work>) => {
-    setWorks((current) =>
+    setAllWorks((current) =>
       current.map((work) => (work.id === id ? { ...work, ...changes } : work)),
     )
   }, [])
 
   const deleteWork = useCallback((id: string) => {
-    setWorks((current) => current.filter((work) => work.id !== id))
+    setAllWorks((current) => current.filter((work) => work.id !== id))
   }, [])
 
   const restoreWork = useCallback((work: Work) => {
-    setWorks((current) => [work, ...current])
+    setAllWorks((current) => [work, ...current])
   }, [])
 
-  const hasSubjectName = useCallback(
-    (name: string) =>
-      subjects.some(
-        (subject) => subject.name.trim().toLowerCase() === name.trim().toLowerCase(),
+  const isSubjectNameTakenInTerm = useCallback(
+    (name: string, targetTerm: AcademicTerm) =>
+      allSubjects.some(
+        (subject) =>
+          subject.academicYear === targetTerm.academicYear &&
+          subject.semester === targetTerm.semester &&
+          subject.name.trim().toLowerCase() === name.trim().toLowerCase(),
       ),
-    [subjects],
+    [allSubjects],
   )
 
   const addSubject = useCallback((draft: NewSubjectDraft): Subject => {
@@ -152,7 +173,7 @@ export function useTodolistData(): TodolistData {
       academicYear: draft.academicYear,
       semester: draft.semester,
     }
-    setSubjects((current) => [...current, createdSubject])
+    setAllSubjects((current) => [...current, createdSubject])
     return createdSubject
   }, [])
 
@@ -170,6 +191,6 @@ export function useTodolistData(): TodolistData {
     deleteWork,
     restoreWork,
     addSubject,
-    hasSubjectName,
+    isSubjectNameTakenInTerm,
   }
 }

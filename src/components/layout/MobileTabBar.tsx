@@ -6,7 +6,7 @@ interface MobileTabBarProps {
   onNavigate: (page: PageName) => void
 }
 
-/** แถบเมนูล่างของมือถือ — แตะง่าย พื้นที่กดสูง 52px */
+/** แถบเมนูล่างของมือถือ — แตะง่าย พื้นที่กดสูง 56px */
 export function MobileTabBar({ currentPage, onNavigate }: MobileTabBarProps) {
   return (
     <nav
@@ -20,15 +20,23 @@ export function MobileTabBar({ currentPage, onNavigate }: MobileTabBarProps) {
             key={tab.page}
             type="button"
             aria-current={isCurrent ? 'page' : undefined}
+            title={tab.description}
             onClick={() => onNavigate(tab.page)}
-            className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-[14px] text-[10.5px] ${
+            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-[14px] text-[10.5px] transition-colors ${
               isCurrent ? 'bg-highlight-soft font-bold text-ink' : 'font-semibold text-ink/75'
             }`}
           >
-            <span aria-hidden="true" className="text-[17px]">
-              {tab.icon}
-            </span>
+            <img
+              src={tab.iconSrc}
+              alt=""
+              width={22}
+              height={22}
+              className={`h-[22px] w-[22px] transition-opacity ${
+                isCurrent ? 'opacity-100' : 'opacity-55'
+              }`}
+            />
             {tab.label}
+            <span className="sr-only">— {tab.description}</span>
           </button>
         )
       })}

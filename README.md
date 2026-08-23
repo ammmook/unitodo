@@ -24,6 +24,8 @@ npm run dev
 
 - **เพิ่มงาน** — ปุ่ม `+ Add Work` (desktop) / FAB (มือถือ) → [AddWorkModal](src/components/work/AddWorkModal.tsx) → ตรวจฟอร์ม → กำลังบันทึก → ปิด modal + toast "เพิ่มงานแล้ว" พร้อมปุ่ม "ดูงาน"
 - **เพิ่มวิชา** — `+ Add Subject` → [AddSubjectModal](src/components/subject/AddSubjectModal.tsx) → เช็คชื่อซ้ำในเทอมเดียวกัน → toast
+- **ออกจากระบบ** — กด avatar ขวาบน → [UserMenu](src/components/layout/UserMenu.tsx) แสดงชื่อ/อีเมล/สิทธิ์ → กด “ออกจากระบบ” → กลับหน้า Login พร้อมล้าง state ทั้งหมด
+- **เลือกเทอม** — dropdown ปีการศึกษาและ dropdown เทอม แยกกันบนแถบนำทาง → วิชาและงานถูกกรองตามเทอมที่เลือก (เทอมที่ยังไม่มีข้อมูลจะขึ้น empty state)
 - **เปลี่ยนสถานะ / ลบงาน** — เปิดรายละเอียดงาน → เปลี่ยนสถานะหรือกดลบ → ยืนยันใน [ConfirmDialog](src/components/common/ConfirmDialog.tsx) → toast พร้อมปุ่ม Undo
 
 ## โครงสร้าง
@@ -34,6 +36,7 @@ src/
 ├── data/mockTodolist.ts     Mock data ที่เดียว — สลับไปต่อ API จริงได้โดยไม่แตะ UI
 ├── hooks/                   useTodolistData (state กลาง), useToasts, useMediaQuery
 ├── utils/workFormatting.ts  วันที่แบบไทย, นับวันคงเหลือ, สี/ป้ายของแต่ละสถานะ
+├── assets/icon-nav/          ไอคอน bottom tab bar (import ผ่าน Vite จึงมี hash กัน cache)
 ├── components/              layout · common · dashboard · work · subject
 └── pages/                   4 หน้าตาม design
 ```
@@ -47,6 +50,5 @@ Mobile กับ desktop ออกแบบแยกกัน ไม่ใช่
 ## ยังไม่ได้ทำ (นอก scope)
 
 - ไม่มี backend / database / API / authentication จริง — ข้อมูลอยู่ใน memory และหายเมื่อ refresh
-- ตัวเลือกปี/เทอมบนแถบนำทางเป็น UI อย่างเดียว ยังไม่มีเมนูให้เลือก
 - ปุ่ม 👁 ในตาราง Admin ยังไม่มี action — เตรียม UI ไว้รอหน้าดูข้อมูลผู้ใช้
 - state "บันทึกไม่สำเร็จ / ลองอีกครั้ง" ใน mockup ยังไม่ได้ทำ เพราะยังไม่มี network จริงให้ล้มเหลว

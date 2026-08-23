@@ -9,7 +9,9 @@ import type { AcademicTerm, AppUser } from '../types/todolist'
 interface DashboardPageProps {
   data: TodolistData
   term: AcademicTerm
+  onTermChange: (term: AcademicTerm) => void
   user: AppUser
+  onSignOut: () => void
   isLoading: boolean
   onOpenWork: (workId: string) => void
   onStartNextWork: () => void
@@ -20,7 +22,9 @@ interface DashboardPageProps {
 export function DashboardPage({
   data,
   term,
+  onTermChange,
   user,
+  onSignOut,
   isLoading,
   onOpenWork,
   onStartNextWork,
@@ -38,7 +42,9 @@ export function DashboardPage({
         remainingCount={remainingCount}
         overdueCount={data.overdueCount}
         term={term}
+        onTermChange={onTermChange}
         user={user}
+        onSignOut={onSignOut}
         onStartWorking={onStartNextWork}
         onOpenWorkDetail={() => data.nextDueWork && onOpenWork(data.nextDueWork.id)}
       />
