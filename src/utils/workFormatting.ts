@@ -154,11 +154,13 @@ export function computeWorkPriority(isoDate: string, status: WorkStatus): WorkPr
 export const WORK_TYPE_STYLE: Record<WorkType, { label: string; icon: string }> = {
   homework: { label: 'Homework', icon: '📓' },
   assignment: { label: 'Assignment', icon: '📋' },
-  exam: { label: 'Exam', icon: '🧪' },
+  exam: { label: 'Exam', icon: '✒️' },
   presentation: { label: 'Presentation', icon: '🎤' },
+  project: { label: 'Project', icon: '🚀' },
+  other: { label: 'Other', icon: '💬' },
 }
 
-export const WORK_TYPE_ORDER: WorkType[] = ['homework', 'assignment', 'exam', 'presentation']
+export const WORK_TYPE_ORDER: WorkType[] = ['homework', 'assignment', 'exam', 'presentation', 'project', 'other']
 
 export function isOverdue(isoDate: string, status: WorkStatus): boolean {
   return status !== 'completed' && daysUntilDue(isoDate) < 0

@@ -1,10 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import type { AcademicTerm, NewWorkDraft, Subject, WorkType } from '../../types/todolist'
 import {
-  WORK_PRIORITY_STYLE,
   WORK_TYPE_ORDER,
   WORK_TYPE_STYLE,
-  computeWorkPriority,
   daysUntilDue,
   todayAsInputValue,
 } from '../../utils/workFormatting'
@@ -65,11 +63,6 @@ export function AddWorkModal({
     setDraft(nextDraft)
     if (hasTriedSubmit) setErrors(findWorkFormErrors(nextDraft))
   }
-
-  const daysBeforeDue = draft.dueDate === '' ? null : daysUntilDue(draft.dueDate)
-  // งานที่เพิ่งเพิ่มมีสถานะ notStarted เสมอ
-  const previewPriority =
-    draft.dueDate === '' ? null : computeWorkPriority(draft.dueDate, 'notStarted')
 
   const handleSubmit = (event: FormEvent, requestClose: () => void) => {
     event.preventDefault()
@@ -206,29 +199,6 @@ export function AddWorkModal({
                 </label>
                 <FieldError id="new-work-due-error" message={errors.dueDate} />
               </div>
-
-              {/* ความสำคัญคำนวณจากวันที่เหลือ ไม่ได้ให้เลือกเอง — โชว์ให้เห็นว่าจะได้ระดับไหน */}
-              {previewPriority && (
-                <p className="flex flex-wrap items-center gap-2 rounded-[14px] bg-sand px-3.5 py-3 text-[12.5px] font-semibold text-ink/80">
-                  <span>ความสำคัญที่ระบบจะให้</span>
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${WORK_PRIORITY_STYLE[previewPriority].badgeClass}`}
-                  >
-                    <span aria-hidden="true">{WORK_PRIORITY_STYLE[previewPriority].icon}</span>
-                    {WORK_PRIORITY_STYLE[previewPriority].label}
-                  </span>
-                  <span className="text-ink/60">ปรับให้เองเมื่อใกล้กำหนดส่ง</span>
-                </p>
-              )}
-
-              {daysBeforeDue !== null && daysBeforeDue >= 0 && (
-                <p className="flex items-center gap-2.5 rounded-[14px] bg-highlight-soft px-3.5 py-3 text-[12.5px] font-semibold text-highlight-ink">
-                  <span aria-hidden="true">⏰</span>
-                  {daysBeforeDue === 0
-                    ? 'ครบกำหนดวันนี้ — จะขึ้นบนสุดของ “ใกล้ถึงกำหนด” ให้เอง'
-                    : `อีก ${daysBeforeDue} วันก่อนถึงกำหนด — จะขึ้นในการ์ด “ใกล้ถึงกำหนด” ให้เอง`}
-                </p>
-              )}
             </section>
 
             <hr className="border-0 border-t border-ink/10" />
@@ -247,7 +217,7 @@ export function AddWorkModal({
                   rows={2}
                   value={draft.note}
                   onChange={(event) => updateDraft({ note: event.target.value })}
-                  placeholder="เช่น อ่านบท 4 ให้จบก่อน แล้วค่อยเริ่มวาด"
+                  placeholder="กรอกรายละเอียดเพิ่มเติม..."
                   className={`${INPUT_CLASS} resize-none py-3 leading-relaxed`}
                 />
               </label>

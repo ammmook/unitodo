@@ -6,8 +6,8 @@
  *   1. เปิด Google Sheet ที่จะใช้เป็นฐานข้อมูล > Extensions > Apps Script
  *   2. วางไฟล์นี้ทับ Code.gs แล้วแก้ GOOGLE_CLIENT_ID ด้านล่างให้ตรงกับ
  *      OAuth Client ID (Web application) ที่สร้างไว้ใน Google Cloud Console
- *   3. เลือกฟังก์ชัน authorizeOnce ในแถบด้านบนแล้วกด Run หนึ่งครั้ง แล้วกด Allow ให้ครบ
- *      (ข้ามขั้นนี้ไม่ได้ — สคริปต์ต้องได้สิทธิ์ UrlFetchApp ไว้ตรวจ token กับ Google)
+ *   3. เลือกฟังก์ชัน setupAutomation ในแถบด้านบนแล้วกด Run หนึ่งครั้ง แล้วกด Allow ให้ครบ
+ *      (ข้ามขั้นนี้ไม่ได้ — จะขอสิทธิ์ ปรับรูปแบบชีต และติดตั้ง trigger รายวันให้ในทีเดียว)
  *   4. Deploy > New deployment > Web app
  *        Execute as     : Me
  *        Who has access : Anyone
@@ -24,6 +24,8 @@
  *   - อ่านชีตด้วย getValues() ครั้งเดียวต่อชีต ไม่วนอ่านทีละเซลล์
  *   - เขียนแบบหาแถวจากคอลัมน์ id อย่างเดียว แล้ว setValues() ครั้งเดียว
  *   - ผล verify id_token ถูก cache ไว้ ไม่ต้องยิง Google ซ้ำทุก request
+ *   - คอลัมน์ priority อัปเดตด้วย trigger รายวัน (อ่านครั้งเดียว เขียนครั้งเดียว)
+ *     ไม่ต้องรอให้มีคนเปิดเว็บ และไม่เพิ่มภาระให้คำขอปกติ
  */
 
 // ── ตั้งค่า ────────────────────────────────────────────────────────
@@ -38,7 +40,7 @@ var GOOGLE_CLIENT_ID = 'PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE.apps.googleuserco
 var BOOTSTRAP_ADMIN_EMAILS = [];
 
 /** ขยับเลขนี้ทุกครั้งที่แก้ไฟล์ — เอาไว้เช็คว่า deploy เวอร์ชันใหม่แล้วจริงผ่าน action 'ping' */
-var BACKEND_VERSION = 3;
+var BACKEND_VERSION = 4;
 
 var USERS_SHEET = 'Users';
 var SUBJECTS_SHEET = 'Subjects';
@@ -46,13 +48,13 @@ var WORKS_SHEET = 'Works';
 
 var USERS_HEADERS = ['id', 'email', 'displayName', 'isAdmin', 'signedUpAt', 'lastSignInAt'];
 var SUBJECTS_HEADERS = ['id', 'ownerEmail', 'name', 'emoji', 'academicYear', 'semester', 'createdAt'];
-// ไม่มีคอลัมน์ priority — ความสำคัญคำนวณสดจากสถานะ + วันที่เหลือทุกครั้งที่แสดงผล
-// ถ้าเก็บลงชีต ค่าจะเพี้ยนทันทีที่วันเปลี่ยน (ดู computeWorkPriority ฝั่ง frontend)
-var WORKS_HEADERS = ['id', 'ownerEmail', 'subjectId', 'title', 'type', 'status', 'dueDate', 'note', 'createdAt'];
+// คอลัมน์ priority ถูกคำนวณและเขียนโดยระบบ ไม่ใช่ค่าที่ผู้ใช้กรอก
+// อัปเดตทุกวันด้วย time-based trigger (recalculatePriorities) และทุกครั้งที่เพิ่ม/แก้งาน
+var WORKS_HEADERS = ['id', 'ownerEmail', 'subjectId', 'title', 'type', 'status', 'priority', 'dueDate', 'note', 'createdAt'];
 
 var U = { ID: 0, EMAIL: 1, DISPLAY_NAME: 2, IS_ADMIN: 3, SIGNED_UP_AT: 4, LAST_SIGN_IN_AT: 5 };
 var S = { ID: 0, OWNER_EMAIL: 1, NAME: 2, EMOJI: 3, ACADEMIC_YEAR: 4, SEMESTER: 5, CREATED_AT: 6 };
-var W = { ID: 0, OWNER_EMAIL: 1, SUBJECT_ID: 2, TITLE: 3, TYPE: 4, STATUS: 5, DUE_DATE: 6, NOTE: 7, CREATED_AT: 8 };
+var W = { ID: 0, OWNER_EMAIL: 1, SUBJECT_ID: 2, TITLE: 3, TYPE: 4, STATUS: 5, PRIORITY: 6, DUE_DATE: 7, NOTE: 8, CREATED_AT: 9 };
 
 var VALID_STATUS = { notStarted: 1, inProgress: 1, completed: 1 };
 var VALID_TYPE = { homework: 1, assignment: 1, exam: 1, presentation: 1 };
@@ -79,7 +81,14 @@ function handle(params) {
 
     // เช็คว่า deploy เวอร์ชันไหนอยู่ โดยไม่ต้องมี token — ใช้ไล่ปัญหาตอนตั้งค่า
     if (action === 'ping') {
-      return jsonResponse({ ok: true, data: { version: BACKEND_VERSION, scopesOk: canFetchExternal() } });
+      return jsonResponse({
+        ok: true,
+        data: {
+          version: BACKEND_VERSION,
+          scopesOk: canFetchExternal(),
+          dailyTriggers: countDailyPriorityTriggers()
+        }
+      });
     }
 
     // ตรวจตัวตนจาก Google id_token ทุก request — ไม่เชื่ออีเมลที่ client ส่งมาลอย ๆ
@@ -146,6 +155,7 @@ function authorizeOnce() {
   getUsersSheet();
   getSubjectsSheet();
   getWorksSheet();
+  countDailyPriorityTriggers();
   var reachable = canFetchExternal();
   Logger.log(reachable
     ? 'พร้อมใช้งานแล้ว — Deploy เวอร์ชันใหม่ได้เลย'
@@ -153,37 +163,210 @@ function authorizeOnce() {
   return reachable;
 }
 
-/**
- * รันครั้งเดียวถ้าเคยใช้ backend เวอร์ชันก่อนหน้าที่ยังมีคอลัมน์ priority ในชีต Works
- * ตอนนี้ความสำคัญคำนวณสดจากวันที่ ไม่เก็บลงชีตแล้ว คอลัมน์นั้นจึงต้องถูกลบทิ้ง
- *
- * ปลอดภัยกับข้อมูลเดิม — ลบเฉพาะเมื่อเจอหัวคอลัมน์ชื่อ 'priority' จริง ๆ
- * และรันซ้ำกี่รอบก็ได้ ไม่พังอะไร
- */
-function migrateRemovePriorityColumn() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(WORKS_SHEET);
-  if (!sheet || sheet.getLastRow() === 0) {
-    Logger.log('ยังไม่มีชีต Works — ไม่ต้องทำอะไร');
-    return false;
+// ── Priority: คำนวณอัตโนมัติ + เขียนลงชีตเอง ──────────────────
+//
+// กติกา (ตรงกับ computeWorkPriority ฝั่ง frontend — แก้ที่ไหนต้องแก้อีกที่ด้วย)
+//   เสร็จแล้ว                    → '' (ไม่มีความสำคัญ ดูคอลัมน์ status แทน)
+//   เลยกำหนด / ครบกำหนดวันนี้     → urgent เสมอ
+//   ยังไม่ได้ทำ  เหลือ 1–2 วัน    → high · 3 วัน → medium · 4 วันขึ้นไป → low
+//   กำลังทำ      เหลือ 1 วัน      → high · 2–3 วัน → medium · 4 วันขึ้นไป → low
+
+var PRIORITY_HANDLER = 'recalculatePriorities';
+
+/** จำนวนวันจากวันนี้ถึงกำหนดส่ง — ติดลบคือเลยกำหนด */
+function daysUntilDue(dueDate) {
+  var due = String(dueDate || '').slice(0, 10).split('-');
+  if (due.length !== 3) return 0;
+
+  var timeZone = Session.getScriptTimeZone();
+  var today = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd').split('-');
+
+  // เทียบเป็นเที่ยงคืน UTC ทั้งคู่ จะได้ไม่โดน offset ของโซนเวลาทำให้เพี้ยนไปหนึ่งวัน
+  var dueUtc = Date.UTC(Number(due[0]), Number(due[1]) - 1, Number(due[2]));
+  var todayUtc = Date.UTC(Number(today[0]), Number(today[1]) - 1, Number(today[2]));
+  return Math.round((dueUtc - todayUtc) / 86400000);
+}
+
+/** คืน '' เมื่องานเสร็จแล้ว — ไม่ต้องคำนวณความสำคัญ */
+function computeWorkPriority(dueDate, status) {
+  if (status === 'completed') return '';
+
+  var days = daysUntilDue(dueDate);
+  if (days <= 0) return 'urgent';
+
+  if (status === 'inProgress') {
+    if (days === 1) return 'high';
+    if (days <= 3) return 'medium';
+    return 'low';
   }
 
-  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-  var priorityIndex = -1;
-  for (var i = 0; i < headers.length; i++) {
-    if (String(headers[i]).trim() === 'priority') {
-      priorityIndex = i;
-      break;
+  if (days <= 2) return 'high';
+  if (days === 3) return 'medium';
+  return 'low';
+}
+
+/**
+ * คำนวณ priority ใหม่ทั้งชีตแล้วเขียนกลับ — ตัวนี้คือสิ่งที่ trigger รายวันเรียก
+ *
+ * อ่านครั้งเดียว เขียนครั้งเดียว (เฉพาะคอลัมน์ priority) และข้ามการเขียนถ้าไม่มีอะไรเปลี่ยน
+ * ปลอดภัยเมื่อรันทับกับคำขอจากเว็บ เพราะจับ lock ตัวเดียวกับฝั่งเขียน
+ */
+function recalculatePriorities() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('มีงานเขียนอื่นค้างอยู่ ข้ามรอบนี้ไปก่อน');
+    return 0;
+  }
+
+  try {
+    var sheet = getWorksSheet();
+    var lastRow = sheet.getLastRow();
+    if (lastRow <= 1) {
+      Logger.log('ยังไม่มีงานในชีต');
+      return 0;
+    }
+
+    var rows = sheet.getRange(2, 1, lastRow - 1, WORKS_HEADERS.length).getValues();
+    var column = [];
+    var changed = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+      var current = String(rows[i][W.PRIORITY] || '');
+      var next = rows[i][W.ID]
+        ? computeWorkPriority(asDateString(rows[i][W.DUE_DATE]), String(rows[i][W.STATUS]))
+        : current;
+
+      if (next !== current) changed++;
+      column.push([next]);
+    }
+
+    if (changed > 0) {
+      sheet.getRange(2, W.PRIORITY + 1, column.length, 1).setValues(column);
+    }
+
+    Logger.log('ตรวจ ' + rows.length + ' งาน · อัปเดต ' + changed + ' แถว');
+    return changed;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * ติดตั้ง trigger รายวัน — ทำงานช่วงเที่ยงคืนถึงตีหนึ่งตามโซนเวลาในไฟล์ appsscript.json
+ * (Asia/Bangkok) ทุกวัน ไม่ว่าจะมีคนเปิดเว็บหรือไม่
+ *
+ * ลบ trigger เดิมของ handler เดียวกันก่อนเสมอ รันซ้ำกี่รอบก็ไม่เกิด trigger ซ้อน
+ */
+function installDailyPriorityTrigger() {
+  removeDailyPriorityTrigger();
+
+  ScriptApp.newTrigger(PRIORITY_HANDLER)
+    .timeBased()
+    .atHour(0)
+    .nearMinute(15)
+    .everyDays(1)
+    .create();
+
+  Logger.log('ติดตั้ง trigger รายวันแล้ว — จะรัน ' + PRIORITY_HANDLER + ' ทุกวันช่วงเที่ยงคืน');
+  return true;
+}
+
+function removeDailyPriorityTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  var removed = 0;
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === PRIORITY_HANDLER) {
+      ScriptApp.deleteTrigger(triggers[i]);
+      removed++;
     }
   }
+  return removed;
+}
 
-  if (priorityIndex === -1) {
-    Logger.log('ไม่มีคอลัมน์ priority อยู่แล้ว — ชีตเป็นรูปแบบใหม่เรียบร้อย');
+/** trigger รายวันติดตั้งไว้แล้วกี่ตัว — ใช้เช็คผ่าน action 'ping' */
+function countDailyPriorityTriggers() {
+  try {
+    var triggers = ScriptApp.getProjectTriggers();
+    var count = 0;
+    for (var i = 0; i < triggers.length; i++) {
+      if (triggers[i].getHandlerFunction() === PRIORITY_HANDLER) count++;
+    }
+    return count;
+  } catch (err) {
+    return -1;
+  }
+}
+
+/**
+ * ปรับหัวคอลัมน์ของชีต Works ให้ตรงกับ WORKS_HEADERS ปัจจุบัน
+ *
+ * ย้ายข้อมูลตาม "ชื่อหัวคอลัมน์" ไม่ใช่ตำแหน่ง จึงใช้ได้กับชีตทุกเวอร์ชันที่ผ่านมา
+ * (ทั้งแบบที่มี priority อยู่แล้ว และแบบที่เคยถูกลบออกไป) · รันซ้ำได้ ไม่ทำอะไรถ้าตรงอยู่แล้ว
+ */
+function ensureWorksSchema() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = spreadsheet.getSheetByName(WORKS_SHEET);
+  if (!sheet || sheet.getLastRow() === 0) {
+    Logger.log('ยังไม่มีชีต Works — จะถูกสร้างด้วยรูปแบบใหม่เองตอนใช้งานครั้งแรก');
     return false;
   }
 
-  sheet.deleteColumn(priorityIndex + 1);
-  Logger.log('ลบคอลัมน์ priority ออกจากชีต Works แล้ว');
+  var currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var isSame = currentHeaders.length === WORKS_HEADERS.length;
+  for (var i = 0; isSame && i < WORKS_HEADERS.length; i++) {
+    if (String(currentHeaders[i]).trim() !== WORKS_HEADERS[i]) isSame = false;
+  }
+  if (isSame) {
+    Logger.log('ชีต Works เป็นรูปแบบล่าสุดอยู่แล้ว');
+    return false;
+  }
+
+  // จับคู่ชื่อหัวคอลัมน์เดิม → ตำแหน่งใหม่
+  var indexByName = {};
+  for (var c = 0; c < currentHeaders.length; c++) {
+    indexByName[String(currentHeaders[c]).trim()] = c;
+  }
+
+  var lastRow = sheet.getLastRow();
+  var oldRows = lastRow > 1
+    ? sheet.getRange(2, 1, lastRow - 1, currentHeaders.length).getValues()
+    : [];
+
+  var newRows = [];
+  for (var r = 0; r < oldRows.length; r++) {
+    var newRow = [];
+    for (var h = 0; h < WORKS_HEADERS.length; h++) {
+      var from = indexByName[WORKS_HEADERS[h]];
+      newRow.push(from === undefined ? '' : oldRows[r][from]);
+    }
+    newRows.push(newRow);
+  }
+
+  sheet.clear();
+  sheet.getRange(1, 1, 1, WORKS_HEADERS.length).setValues([WORKS_HEADERS]).setFontWeight('bold');
+  sheet.setFrozenRows(1);
+  if (newRows.length > 0) {
+    sheet.getRange(2, 1, newRows.length, WORKS_HEADERS.length).setValues(newRows);
+  }
+
+  Logger.log('ปรับรูปแบบชีต Works แล้ว · ย้ายข้อมูล ' + newRows.length + ' แถว');
   return true;
+}
+
+/**
+ * รันตัวนี้ "หนึ่งครั้ง" หลังวางโค้ดใหม่ — ทำให้ครบทุกอย่างในทีเดียว
+ *   1. ขออนุญาตสิทธิ์ที่ต้องใช้
+ *   2. ปรับหัวคอลัมน์ชีต Works ให้ตรงรูปแบบล่าสุด
+ *   3. ติดตั้ง trigger รายวัน
+ *   4. คำนวณ priority ให้ทุกงานทันที ไม่ต้องรอรอบแรกของ trigger
+ */
+function setupAutomation() {
+  authorizeOnce();
+  ensureWorksSchema();
+  installDailyPriorityTrigger();
+  var changed = recalculatePriorities();
+  Logger.log('พร้อมใช้งาน · อัปเดต priority ไป ' + changed + ' แถว');
+  return changed;
 }
 
 /** เรียกเน็ตออกไปได้ไหม — ใช้ทั้งใน authorizeOnce และ action 'ping' */
@@ -474,7 +657,8 @@ function addWork(params, ownerEmail) {
 
   getWorksSheet().appendRow([
     work.id, work.ownerEmail, work.subjectId, work.title, work.type,
-    work.status, work.dueDate, work.note, work.createdAt
+    work.status, computeWorkPriority(work.dueDate, work.status),
+    work.dueDate, work.note, work.createdAt
   ]);
 
   return jsonResponse({ ok: true, data: work });
@@ -495,6 +679,9 @@ function updateWork(params, ownerEmail) {
   if (params.status != null) row[W.STATUS] = pick(params.status, VALID_STATUS, String(row[W.STATUS]));
   if (params.dueDate != null) row[W.DUE_DATE] = asDateString(params.dueDate);
   if (params.note != null) row[W.NOTE] = String(params.note);
+
+  // สถานะหรือกำหนดส่งเปลี่ยน = ความสำคัญเปลี่ยนตาม คำนวณใหม่ทันทีไม่ต้องรอ trigger รอบถัดไป
+  row[W.PRIORITY] = computeWorkPriority(asDateString(row[W.DUE_DATE]), String(row[W.STATUS]));
 
   range.setValues([row]);
   return jsonResponse({ ok: true, data: { id: String(params.id) } });
