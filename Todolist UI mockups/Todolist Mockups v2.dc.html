@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<title>Todolist — UI mockups (Dashboard, My Work, Subjects, Admin)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#efece6;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',system-ui,sans-serif}
+  a{color:#2a78d6}a:hover{color:#1b5aa8}
+  .dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+  .dv-tid{font:600 10px 'IBM Plex Mono',monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+  .dv-tname{font:600 13px/1.2 'Plus Jakarta Sans',sans-serif;color:#1a1a1a}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+  .dv-oid{font:600 10.5px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+  .dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 'Plus Jakarta Sans',sans-serif;color:rgba(0,0,0,.55)}
+  .dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+  .dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+  .dv-next{margin:22px 0 0;font:12px/1.6 'Plus Jakarta Sans',sans-serif;color:rgba(0,0,0,.5)}
+  .dv-note{margin:0 0 22px;max-width:900px;font:13px/1.65 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:rgba(0,0,0,.6)}
+  @keyframes d1{from{stroke-dasharray:0 478}to{stroke-dasharray:206 478}}
+  @keyframes d2{from{stroke-dasharray:0 478}to{stroke-dasharray:100 478}}
+  @keyframes d3{from{stroke-dasharray:0 478}to{stroke-dasharray:153 478}}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  @keyframes shim{from{background-position:-320px 0}to{background-position:320px 0}}
+  @keyframes bar{from{width:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes scrimIn{from{opacity:0}to{opacity:1}}
+  @keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+  @keyframes modalOut{from{opacity:1;transform:none}to{opacity:0;transform:translateY(8px) scale(.985)}}
+  @keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t5">
+  <div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">Add Work Modal — ออกแบบใหม่: 3 กลุ่มข้อมูล, ประเภทของงานเลือกได้ 1 อย่างผ่าน dropdown</span></div>
+  <p class="dv-note">จัดฟอร์มใหม่ตาม flow การกรอก: <strong>1 งานอะไร</strong> (ชื่องาน → วิชา → ประเภท) · <strong>2 เมื่อไหร่ &amp; สำคัญแค่ไหน</strong> (กำหนดส่ง → ความสำคัญ) · <strong>3 รายละเอียดเพิ่ม</strong> (โน้ต, ไม่บังคับ). ประเภทของงานเลือกได้ 1 อย่าง ใช้ dropdown แบบเดียวกับช่องวิชา เพื่อให้ฟอร์มนิ่งและกรอกไว. <a href="#5b">5b</a> คือ state กรอกผิด / กำลังบันทึก / สำเร็จ. ปุ่ม Cancel / Add Work อยู่แถบล่างที่ติดขอบเสมอ. เปิด-ปิดมี animation: scrim จาง 160ms + การ์ดเลื่อนขึ้น 14px พร้อม scale .97→1 (mobile เลื่อนขึ้นจากขอบล่าง) และตอนปิดเลื่อนลงเบา ๆ.</p>
+
+  <div class="dv-opts">
+
+    <div class="dv-opt" id="5a">
+      <div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Desktop · ซ้อนบนหน้า “งานทั้งหมด” จริง · 1280</div>
+      <div class="dv-card" style="width:1280px">
+        <div style="position:relative;min-height:880px;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+          <header style="background:#2a2622;color:#fbf7f0;padding:16px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:18px">
+              <span style="display:flex;align-items:center;gap:9px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:14px">T</span><strong style="font-size:15px;letter-spacing:-.2px">Todolist</strong></span>
+              <nav aria-label="เมนูหลัก" style="display:flex;gap:4px;background:rgba(251,247,240,.1);padding:5px;border-radius:14px">
+                <a href="#2a" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none">Dashboard</a>
+                <a href="#2b" style="padding:9px 15px;border-radius:10px;background:#fbf7f0;color:#2a2622;font-size:13px;font-weight:700;text-decoration:none">งานทั้งหมด</a>
+                <a href="#2c" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none">วิชาเรียน</a>
+              </nav>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button type="button" style="min-height:40px;padding:0 13px;border:1px solid rgba(251,247,240,.28);border-radius:12px;background:transparent;color:#fbf7f0;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ปี 2569 · เทอม 1 ▾</button>
+              <span style="width:34px;height:34px;border-radius:99px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:700;font-size:13px">N</span>
+            </div>
+          </header>
+
+          <div aria-hidden="true" style="padding:26px 28px;display:flex;flex-direction:column;gap:11px;filter:blur(1.5px);opacity:.5">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div style="width:200px;height:26px;border-radius:9px;background:#f1ece1"></div><div style="width:130px;height:44px;border-radius:14px;background:#2a2622"></div></div>
+            <div style="height:46px;border-radius:14px;background:#fff;border:1px solid rgba(42,38,34,.1)"></div>
+            <div style="height:74px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #c1443b"></div>
+            <div style="height:74px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #3f5fc9"></div>
+            <div style="height:74px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b"></div>
+            <div style="height:74px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b"></div>
+            <div style="height:74px;border-radius:18px;background:#fdfbf6;border:1px solid rgba(42,38,34,.08);border-left:5px solid #1f7a56"></div>
+            <div style="height:74px;border-radius:18px;background:#fdfbf6;border:1px solid rgba(42,38,34,.08);border-left:5px solid #1f7a56"></div>
+          </div>
+
+          <div style="position:absolute;inset:0;background:rgba(42,38,34,.5);display:grid;place-items:center;padding:26px;box-sizing:border-box;animation:scrimIn .16s ease-out both">
+            <form role="dialog" aria-modal="true" aria-labelledby="awtitle" style="width:100%;max-width:620px;max-height:100%;background:#fbf7f0;border-radius:26px;box-shadow:0 40px 70px -40px #000;display:flex;flex-direction:column;overflow:hidden;animation:modalIn .24s cubic-bezier(.2,.9,.3,1) both">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 24px 16px">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span aria-hidden="true" style="width:42px;height:42px;flex:none;border-radius:15px;background:#f5c33b;display:grid;place-items:center;font-size:19px">✏️</span>
+                  <div>
+                    <h2 id="awtitle" style="margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px">เพิ่มงานใหม่</h2>
+                    <p style="margin:3px 0 0;font-size:12px;color:rgba(42,38,34,.78)">เทอม 1 / 2569</p>
+                  </div>
+                </div>
+                <button type="button" aria-label="ปิด" style="width:40px;height:40px;flex:none;border-radius:13px;border:1px solid rgba(42,38,34,.14);background:#fff;font-size:15px;color:#2a2622;cursor:pointer;transition:background .16s,transform .12s" style-hover="background:#f1ece1" style-active="transform:scale(.94)">✕</button>
+              </div>
+
+              <div style="padding:0 24px;display:flex;flex-direction:column;gap:18px;overflow:auto">
+                <section style="display:flex;flex-direction:column;gap:12px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:10px">1</span>งานอะไร</h3>
+                  <label for="nwname" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ชื่องาน
+                    <input id="nwname" type="text" placeholder="เช่น Lab 3 วาดดอกกระบองเพชร" style="min-height:52px;padding:0 15px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 15px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                  </label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <label for="nwsubj" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">วิชา
+                      <select id="nwsubj" style="min-height:52px;padding:0 13px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกวิชา…</option><option>Cactus</option><option>Testing 1</option><option>Web</option><option>Java</option><option>StartUp</option></select>
+                    </label>
+                    <label for="nwtype" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ประเภทของงาน
+                      <select id="nwtype" style="min-height:52px;padding:0 13px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกประเภท…</option><option>📓 Homework</option><option>📋 Assignment</option><option>🧪 Exam</option><option>🎤 Presentation</option></select>
+                    </label>
+                  </div>
+                </section>
+
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+
+                <section style="display:flex;flex-direction:column;gap:12px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:10px">2</span>ส่งเมื่อไหร่ · สำคัญแค่ไหน</h3>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end">
+                    <label for="nwdue" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">กำหนดส่ง
+                      <input id="nwdue" type="date" value="2026-08-30" style="min-height:52px;padding:0 15px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans',sans-serif;color:#2a2622">
+                    </label>
+                    <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}">
+                      <fieldset style="margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:7px">
+                        <legend style="font-size:13px;font-weight:700;padding:0">ความสำคัญ</legend>
+                        <div style="display:flex;gap:7px">
+                          <button type="button" aria-pressed="true" style="flex:1;min-height:52px;border:2px solid #c1443b;border-radius:15px;background:#fdeceb;font:800 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#8f2f27;cursor:pointer;white-space:nowrap">▲ สูง</button>
+                          <button type="button" aria-pressed="false" style="flex:1;min-height:52px;border:1px solid rgba(42,38,34,.16);border-radius:15px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap;transition:background .16s" style-hover="background:#f1ece1">■ กลาง</button>
+                          <button type="button" aria-pressed="false" style="flex:1;min-height:52px;border:1px solid rgba(42,38,34,.16);border-radius:15px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap;transition:background .16s" style-hover="background:#f1ece1">▼ ต่ำ</button>
+                        </div>
+                      </fieldset>
+                    </sc-if>
+                  </div>
+                  <p style="margin:0;display:flex;gap:9px;align-items:center;padding:12px 14px;border-radius:14px;background:#fef6e0;font-size:12.5px;font-weight:600;color:#7d5806"><span aria-hidden="true">⏰</span>อีก 7 วันก่อนถึงกำหนด — จะขึ้นในการ์ด “ใกล้ถึงกำหนด” ให้เอง</p>
+                </section>
+
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+
+                <section style="display:flex;flex-direction:column;gap:12px;padding-bottom:4px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#f1ece1;color:#2a2622;display:grid;place-items:center;font-size:10px">3</span>รายละเอียดเพิ่ม <span style="font-weight:600;letter-spacing:0;text-transform:none">(ไม่ใส่ก็ได้)</span></h3>
+                  <label for="nwnote" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">โน้ตช่วยเตือนตัวเอง
+                    <textarea id="nwnote" rows="2" placeholder="เช่น อ่านบท 4 ให้จบก่อน แล้วค่อยเริ่มวาด" style="padding:13px 15px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:500 14px/1.55 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;resize:none"></textarea>
+                  </label>
+                </section>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center;padding:16px 24px;background:#fff;border-top:1px solid rgba(42,38,34,.1)">
+                <p style="margin:0;flex:1;font-size:11.5px;color:rgba(42,38,34,.74)">สถานะเริ่มต้น: 🕒 ยังไม่ได้ทำ</p>
+                <button type="button" style="min-height:52px;padding:0 20px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;transition:background .16s" style-hover="background:#f1ece1">ยกเลิก</button>
+                <button type="submit" style="min-height:52px;padding:0 26px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433;transition:transform .12s,box-shadow .12s" style-hover="transform:translateY(-1px);box-shadow:0 6px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">Add Work</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="5b">
+      <div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Desktop · state กรอกผิด / กำลังบันทึก / สำเร็จ</div>
+      <div class="dv-card" style="width:900px">
+        <div style="background:#fbf7f0;padding:26px;display:flex;gap:18px;flex-wrap:wrap;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+          <form style="flex:1;min-width:400px;background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px">
+            <h3 style="margin:0;font-size:14.5px;font-weight:800">กรอกไม่ครบ 3 ช่อง</h3>
+            <div style="display:flex;gap:11px;align-items:center;padding:13px 15px;border-radius:16px;background:#fdeceb;border:1px solid rgba(193,68,59,.4)">
+              <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#c1443b;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700">!</span>
+              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700;color:#8f2f27">ยังบันทึกไม่ได้</div><div style="font-size:11.5px;color:#7a2620">เติมชื่องาน วิชา และกำหนดส่งให้ครบก่อนนะ</div></div>
+            </div>
+            <label for="e5name" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ชื่องาน
+              <input id="e5name" type="text" value="" placeholder="เช่น Lab 3 วาดดอกกระบองเพชร" aria-invalid="true" aria-describedby="e5nameerr" style="min-height:52px;padding:0 15px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 15px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+            </label>
+            <p id="e5nameerr" style="margin:-7px 0 0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>ต้องใส่ชื่องานก่อน</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <label for="e5subj" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">วิชา
+                  <select id="e5subj" aria-invalid="true" aria-describedby="e5subjerr" style="min-height:52px;padding:0 13px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกวิชา…</option><option>Cactus</option></select>
+                </label>
+                <p id="e5subjerr" style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>ยังไม่ได้เลือกวิชา</p>
+              </div>
+              <label for="e5type" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ประเภทของงาน
+                <select id="e5type" style="min-height:52px;padding:0 13px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>📓 Homework</option><option>📋 Assignment</option><option>🧪 Exam</option></select>
+              </label>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <label for="e5due" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">กำหนดส่ง
+                <input id="e5due" type="date" value="2026-07-01" aria-invalid="true" aria-describedby="e5dueerr" style="min-height:52px;padding:0 15px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 14px 'Plus Jakarta Sans',sans-serif;color:#2a2622">
+              </label>
+              <p id="e5dueerr" style="margin:0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>วันที่นี้ผ่านมาแล้ว เลือกวันใหม่ไหม?</p>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button type="button" style="min-height:52px;padding:0 20px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ยกเลิก</button>
+              <button type="button" disabled style="min-height:52px;padding:0 26px;border:0;border-radius:15px;background:#e5ded1;color:rgba(42,38,34,.6);font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:not-allowed">Add Work</button>
+            </div>
+          </form>
+
+          <div style="flex:1;min-width:320px;display:flex;flex-direction:column;gap:14px">
+            <div style="background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px">
+              <h3 style="margin:0;font-size:14.5px;font-weight:800">กำลังบันทึก</h3>
+              <div aria-hidden="true" style="height:52px;border-radius:15px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+              <div aria-hidden="true" style="height:52px;border-radius:15px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .15s infinite linear"></div>
+              <div style="display:flex;gap:10px;justify-content:flex-end">
+                <button type="button" disabled style="min-height:52px;padding:0 20px;border:1px solid rgba(42,38,34,.14);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:rgba(42,38,34,.6);cursor:not-allowed">ยกเลิก</button>
+                <button type="button" aria-busy="true" style="min-height:52px;padding:0 24px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:progress;display:flex;align-items:center;justify-content:center;gap:10px"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(251,247,240,.35);border-top-color:#f5c33b;animation:spin .8s linear infinite"></span>กำลังบันทึก…</button>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px">
+              <h3 style="margin:0;font-size:14.5px;font-weight:800">บันทึกสำเร็จ</h3>
+              <div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#2a2622;color:#fbf7f0">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;animation:pop .5s both">✓</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">เพิ่มงานแล้ว 🎉</div><div style="font-size:11.5px;color:rgba(251,247,240,.8)">Lab 3 · Cactus · Homework · ส่ง 30 ส.ค.</div></div>
+                <button type="button" style="flex:none;min-height:38px;padding:0 13px;border:1px solid rgba(251,247,240,.3);border-radius:11px;background:transparent;color:#fbf7f0;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">ดูงาน</button>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px">
+              <h3 style="margin:0;font-size:14.5px;font-weight:800">บันทึกไม่สำเร็จ</h3>
+              <div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fdeceb;border:1px solid rgba(193,68,59,.4)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#c1443b;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700">!</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700;color:#8f2f27">เชื่อมต่อไม่ได้</div><div style="font-size:11.5px;color:#7a2620">งานยังอยู่ในฟอร์ม กดลองอีกครั้งได้เลย</div></div>
+                <button type="button" style="flex:none;min-height:38px;padding:0 13px;border:0;border-radius:11px;background:#c1443b;color:#fff;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">ลองอีกครั้ง</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="5c">
+      <div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>Mobile 390 · sheet สูงไม่เกินจอ เลื่อนอ่านได้ ปุ่มติดขอบล่าง + state กรอกผิด / กำลังบันทึก</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;background:rgba(42,38,34,.5);font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;display:flex;flex-direction:column;justify-content:flex-end;animation:scrimIn .16s ease-out both">
+            <form style="background:#fbf7f0;color:#2a2622;border-radius:26px 26px 0 0;display:flex;flex-direction:column;max-height:700px;overflow:hidden;animation:sheetUp .3s cubic-bezier(.2,.9,.3,1) both">
+              <div style="padding:12px 18px 14px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid rgba(42,38,34,.1)">
+                <div aria-hidden="true" style="width:44px;height:5px;border-radius:99px;background:rgba(42,38,34,.22);margin:0 auto"></div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:14px;background:#f5c33b;display:grid;place-items:center;font-size:17px">✏️</span>
+                  <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.3px">เพิ่มงานใหม่</h2><p style="margin:2px 0 0;font-size:11.5px;color:rgba(42,38,34,.78)">เทอม 1 / 2569</p></div>
+                  <button type="button" aria-label="ปิด" style="width:44px;height:44px;flex:none;border-radius:13px;border:1px solid rgba(42,38,34,.14);background:#fff;font-size:15px;color:#2a2622;cursor:pointer">✕</button>
+                </div>
+              </div>
+
+              <div style="padding:16px 18px;display:flex;flex-direction:column;gap:16px;overflow:auto">
+                <section style="display:flex;flex-direction:column;gap:11px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:17px;height:17px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:9.5px">1</span>งานอะไร</h3>
+                  <label for="m5name" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ชื่องาน
+                    <input id="m5name" type="text" placeholder="เช่น Lab 3 วาดดอกกระบองเพชร" style="min-height:52px;padding:0 14px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                  </label>
+                  <label for="m5subj" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">วิชา
+                    <select id="m5subj" style="min-height:52px;padding:0 12px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกวิชา…</option><option>Cactus</option><option>Testing 1</option><option>Web</option></select>
+                  </label>
+                  <label for="m5type" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ประเภทของงาน
+                    <select id="m5type" style="min-height:52px;padding:0 12px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกประเภท…</option><option>📓 Homework</option><option>📋 Assignment</option><option>🧪 Exam</option><option>🎤 Presentation</option></select>
+                  </label>
+                </section>
+
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+
+                <section style="display:flex;flex-direction:column;gap:11px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:17px;height:17px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:9.5px">2</span>ส่งเมื่อไหร่ · สำคัญแค่ไหน</h3>
+                  <label for="m5due" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">กำหนดส่ง
+                    <input id="m5due" type="date" value="2026-08-30" style="min-height:52px;padding:0 14px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans',sans-serif;color:#2a2622">
+                  </label>
+                  <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}">
+                    <fieldset style="margin:0;padding:0;border:0;display:flex;flex-direction:column;gap:6px">
+                      <legend style="font-size:12.5px;font-weight:700;padding:0">ความสำคัญ</legend>
+                      <div style="display:flex;gap:7px">
+                        <button type="button" aria-pressed="true" style="flex:1;min-height:52px;border:2px solid #c1443b;border-radius:15px;background:#fdeceb;font:800 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#8f2f27;cursor:pointer">▲ สูง</button>
+                        <button type="button" aria-pressed="false" style="flex:1;min-height:52px;border:1px solid rgba(42,38,34,.16);border-radius:15px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">■ กลาง</button>
+                        <button type="button" aria-pressed="false" style="flex:1;min-height:52px;border:1px solid rgba(42,38,34,.16);border-radius:15px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">▼ ต่ำ</button>
+                      </div>
+                    </fieldset>
+                  </sc-if>
+                  <p style="margin:0;display:flex;gap:8px;align-items:center;padding:11px 13px;border-radius:14px;background:#fef6e0;font-size:12px;font-weight:600;color:#7d5806"><span aria-hidden="true">⏰</span>อีก 7 วันก่อนถึงกำหนด</p>
+                </section>
+
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+
+                <section style="display:flex;flex-direction:column;gap:11px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:17px;height:17px;border-radius:6px;background:#f1ece1;display:grid;place-items:center;font-size:9.5px">3</span>รายละเอียดเพิ่ม</h3>
+                  <label for="m5note" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">โน้ตช่วยเตือนตัวเอง
+                    <textarea id="m5note" rows="2" placeholder="เช่น อ่านบท 4 ให้จบก่อน" style="padding:12px 14px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:500 13.5px/1.5 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;resize:none"></textarea>
+                  </label>
+                </section>
+              </div>
+
+              <div style="padding:14px 18px 18px;background:#fff;border-top:1px solid rgba(42,38,34,.1);display:flex;gap:9px">
+                <button type="button" style="flex:none;min-height:52px;padding:0 18px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ยกเลิก</button>
+                <button type="submit" style="flex:1;min-height:52px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">Add Work</button>
+              </div>
+            </form>
+            <nav aria-label="เมนู" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;background:rgba(42,38,34,.5);font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;display:flex;flex-direction:column;justify-content:flex-end">
+            <form style="background:#fbf7f0;color:#2a2622;border-radius:26px 26px 0 0;display:flex;flex-direction:column;max-height:700px;overflow:hidden;animation:sheetUp .3s cubic-bezier(.2,.9,.3,1) both">
+              <div style="padding:12px 18px 14px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid rgba(42,38,34,.1)">
+                <div aria-hidden="true" style="width:44px;height:5px;border-radius:99px;background:rgba(42,38,34,.22);margin:0 auto"></div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:14px;background:#c1443b;color:#fff;display:grid;place-items:center;font-size:18px;font-weight:800">!</span>
+                  <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.3px">ยังบันทึกไม่ได้</h2><p style="margin:2px 0 0;font-size:11.5px;color:#7a2620">กรอกไม่ครบ 3 ช่อง</p></div>
+                  <button type="button" aria-label="ปิด" style="width:44px;height:44px;flex:none;border-radius:13px;border:1px solid rgba(42,38,34,.14);background:#fff;font-size:15px;color:#2a2622;cursor:pointer">✕</button>
+                </div>
+              </div>
+              <div style="padding:16px 18px;display:flex;flex-direction:column;gap:13px;overflow:auto">
+                <label for="me5name" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ชื่องาน
+                  <input id="me5name" type="text" value="" placeholder="เช่น Lab 3 วาดดอกกระบองเพชร" aria-invalid="true" aria-describedby="me5nameerr" style="min-height:52px;padding:0 14px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                </label>
+                <p id="me5nameerr" style="margin:-7px 0 0;display:flex;gap:7px;align-items:center;font-size:11.5px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>ต้องใส่ชื่องานก่อน</p>
+                <label for="me5subj" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">วิชา
+                  <select id="me5subj" aria-invalid="true" aria-describedby="me5subjerr" style="min-height:52px;padding:0 12px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>เลือกวิชา…</option><option>Cactus</option></select>
+                </label>
+                <p id="me5subjerr" style="margin:-7px 0 0;display:flex;gap:7px;align-items:center;font-size:11.5px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>ยังไม่ได้เลือกวิชา</p>
+                <label for="me5type" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ประเภทของงาน
+                  <select id="me5type" style="min-height:52px;padding:0 12px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>📓 Homework</option><option>📋 Assignment</option><option>🧪 Exam</option></select>
+                </label>
+                <label for="me5due" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">กำหนดส่ง
+                  <input id="me5due" type="date" value="2026-07-01" aria-invalid="true" aria-describedby="me5dueerr" style="min-height:52px;padding:0 14px;border-radius:15px;border:2px solid #c1443b;background:#fdeceb;font:600 14px 'Plus Jakarta Sans',sans-serif;color:#2a2622">
+                </label>
+                <p id="me5dueerr" style="margin:-7px 0 0;display:flex;gap:7px;align-items:center;font-size:11.5px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>วันที่นี้ผ่านมาแล้ว</p>
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+                <p style="margin:0;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)">กำลังบันทึก / สำเร็จ</p>
+                <button type="button" aria-busy="true" style="min-height:52px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:progress;display:flex;align-items:center;justify-content:center;gap:10px"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(251,247,240,.35);border-top-color:#f5c33b;animation:spin .8s linear infinite"></span>กำลังบันทึก…</button>
+                <div style="display:flex;gap:11px;align-items:center;padding:13px;border-radius:16px;background:#2a2622;color:#fbf7f0">
+                  <span aria-hidden="true" style="width:30px;height:30px;flex:none;border-radius:10px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700;animation:pop .5s both">✓</span>
+                  <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">เพิ่มงานแล้ว 🎉</div><div style="font-size:11px;color:rgba(251,247,240,.8)">Lab 3 · Cactus · ส่ง 30 ส.ค.</div></div>
+                </div>
+              </div>
+              <div style="padding:14px 18px 18px;background:#fff;border-top:1px solid rgba(42,38,34,.1);display:flex;gap:9px">
+                <button type="button" style="flex:none;min-height:52px;padding:0 18px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ยกเลิก</button>
+                <button type="button" disabled style="flex:1;min-height:52px;border:0;border-radius:15px;background:#e5ded1;color:rgba(42,38,34,.6);font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:not-allowed">Add Work</button>
+              </div>
+            </form>
+            <nav aria-label="เมนู" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Try next: “ทำ Edit Work ใช้ฟอร์มเดียวกัน” · “ขอ state ตอนกรอกผิดของฟอร์มใหม่นี้” · “ทำ tablet 768”</p>
+</section>
+
+<section class="dv-turn" id="t3">
+  <div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">แจ้งเตือนทุกแบบ + skeleton loading + หน้ากรอกรายวิชา (desktop &amp; mobile)</span></div>
+  <p class="dv-note">แจ้งเตือนแบ่ง 3 ระดับในธีมเดิม: <strong>toast</strong> (มุมขวาล่าง desktop / ลอยบน mobile) สำหรับผลลัพธ์ทันที · <strong>inline banner</strong> สำหรับสถานะที่ค้างอยู่ (ออฟไลน์ / งานเลยกำหนด) · <strong>modal</strong> เฉพาะ action ที่ย้อนไม่ได้. ฟอร์มวิชาใช้ field ตามตาราง subjects เท่านั้น: <code>name, academicYear, semester</code> (<code>ownerEmail</code> ผูกจากบัญชีที่ล็อกอิน ไม่ต้องกรอก).</p>
+
+  <div class="dv-opts">
+
+    <div class="dv-opt" id="3a">
+      <div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Notifications ทั้งชุด · desktop</div>
+      <div class="dv-card" style="width:560px">
+        <div style="padding:22px;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;display:flex;flex-direction:column;gap:20px">
+          <section>
+            <h2 style="margin:0 0 4px;font-size:13px;font-weight:800;letter-spacing:.08em;color:rgba(42,38,34,.74)">TOAST · ผลลัพธ์ทันที</h2>
+            <p style="margin:0 0 12px;font-size:11.5px;color:rgba(42,38,34,.74)">โผล่มุมขวาล่าง 4 วินาทีแล้วหายเอง · กด ✕ ปิดได้</p>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#2a2622;color:#fbf7f0;box-shadow:0 16px 30px -22px rgba(42,38,34,.9);animation:rise .4s both">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;animation:pop .5s .15s both">✓</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">Done! เยี่ยมมาก 🎉</div><div style="font-size:11.5px;color:rgba(251,247,240,.8)">Lab 1 · Cactus เสร็จแล้ว — เหลืออีก 5 งาน</div></div>
+                <button type="button" aria-label="ปิดการแจ้งเตือน" style="width:30px;height:30px;flex:none;border:0;border-radius:10px;background:rgba(251,247,240,.14);color:#fbf7f0;font-size:13px;cursor:pointer">✕</button>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fff;border:1px solid rgba(42,38,34,.1)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#fef6e0;display:grid;place-items:center;font-size:15px">💾</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">บันทึกแล้ว</div><div style="font-size:11.5px;color:rgba(42,38,34,.74)">Lab2 · แก้กำหนดส่งเป็น 27 ก.ค.</div></div>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fff;border:1px solid rgba(42,38,34,.1)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#f1ece1;display:grid;place-items:center;font-size:15px">🗑️</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">ลบงานแล้ว</div><div style="font-size:11.5px;color:rgba(42,38,34,.74)">Post test 1 · StartUp</div></div>
+                <button type="button" style="flex:none;min-height:36px;padding:0 13px;border:1px solid rgba(42,38,34,.16);border-radius:11px;background:#fbf7f0;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap">Undo</button>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fdeceb;border:1px solid rgba(193,68,59,.4)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#c1443b;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700">!</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700;color:#8f2f27">บันทึกไม่สำเร็จ</div><div style="font-size:11.5px;color:#7a2620">เชื่อมต่อไม่ได้ ลองอีกครั้งนะ</div></div>
+                <button type="button" style="flex:none;min-height:36px;padding:0 13px;border:0;border-radius:11px;background:#c1443b;color:#fff;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">ลองอีกครั้ง</button>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#e9effe;border:1px solid rgba(63,95,201,.3)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#3f5fc9;color:#fff;display:grid;place-items:center;font-size:15px">⚡</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700;color:#24357c">เริ่มทำแล้ว</div><div style="font-size:11.5px;color:#2f4fb8">Lab 1 เปลี่ยนเป็น In Progress</div></div>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#fff;border:1px solid rgba(42,38,34,.1)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#e4f5ec;display:grid;place-items:center;font-size:15px">📚</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">เพิ่มวิชาแล้ว</div><div style="font-size:11.5px;color:rgba(42,38,34,.74)">Golang · เทอม 1 / 2569</div></div>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 style="margin:0 0 4px;font-size:13px;font-weight:800;letter-spacing:.08em;color:rgba(42,38,34,.74)">BANNER · สถานะที่ค้างอยู่</h2>
+            <p style="margin:0 0 12px;font-size:11.5px;color:rgba(42,38,34,.74)">ค้างไว้บนหน้าจนแก้เสร็จ ไม่หายเอง</p>
+            <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+              <li style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:16px;background:#fef6e0;border:1px solid rgba(217,180,51,.5)">
+                <span aria-hidden="true" style="font-size:17px">⏰</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">มี 1 งานเลยกำหนดแล้ว</div><div style="font-size:11.5px;color:rgba(42,38,34,.78)">หพเพเกพเกพเ · Java · ส่ง 8 ก.ค.</div></div>
+                <a href="#2b" style="flex:none;font-size:12px;font-weight:700;color:#7d5806;text-decoration:underline;white-space:nowrap">ดูงาน</a>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:16px;background:#f1ece1;border:1px solid rgba(42,38,34,.16)">
+                <span aria-hidden="true" style="font-size:17px">📡</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700">ออฟไลน์อยู่</div><div style="font-size:11.5px;color:rgba(42,38,34,.78)">ยังดูงานได้ แต่จะบันทึกให้เมื่อกลับมาออนไลน์</div></div>
+              </li>
+              <li style="display:flex;gap:12px;align-items:center;padding:14px 16px;border-radius:16px;background:#e9effe;border:1px solid rgba(63,95,201,.28)">
+                <span aria-hidden="true" style="font-size:17px">🔒</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:700;color:#24357c">เซสชันหมดอายุ</div><div style="font-size:11.5px;color:#2f4fb8">เข้าสู่ระบบด้วย Google อีกครั้งเพื่อบันทึกงาน</div></div>
+                <button type="button" style="flex:none;min-height:38px;padding:0 13px;border:0;border-radius:11px;background:#3f5fc9;color:#fff;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">Sign in</button>
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 style="margin:0 0 4px;font-size:13px;font-weight:800;letter-spacing:.08em;color:rgba(42,38,34,.74)">MODAL · ยืนยันก่อนทำ</h2>
+            <p style="margin:0 0 12px;font-size:11.5px;color:rgba(42,38,34,.74)">ใช้เฉพาะ action ที่ย้อนไม่ได้ (ลบงาน / ลบวิชา)</p>
+            <div style="border-radius:20px;background:rgba(42,38,34,.45);padding:26px;display:grid;place-items:center">
+              <div role="dialog" aria-labelledby="cfmt" aria-modal="true" style="width:100%;max-width:340px;background:#fbf7f0;border-radius:22px;padding:24px;text-align:center;box-shadow:0 30px 50px -30px #000;animation:rise .3s both">
+                <span aria-hidden="true" style="width:48px;height:48px;border-radius:16px;background:#fdeceb;display:grid;place-items:center;font-size:21px;margin:0 auto 14px">🗑️</span>
+                <h3 id="cfmt" style="margin:0;font-size:18px;font-weight:800">ลบวิชา Cactus?</h3>
+                <p style="margin:8px 0 18px;font-size:12.5px;line-height:1.6;color:rgba(42,38,34,.78);text-wrap:pretty">งานในวิชานี้ 3 งานจะถูกลบไปด้วย และกู้คืนไม่ได้</p>
+                <div style="display:flex;gap:9px">
+                  <button type="button" style="flex:1;min-height:48px;border:1px solid rgba(42,38,34,.16);border-radius:14px;background:#fff;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ยกเลิก</button>
+                  <button type="button" style="flex:1;min-height:48px;border:0;border-radius:14px;background:#c1443b;color:#fff;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ลบเลย</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 style="margin:0 0 12px;font-size:13px;font-weight:800;letter-spacing:.08em;color:rgba(42,38,34,.74)">EMPTY STATE</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div style="flex:1;min-width:220px;padding:26px 18px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);text-align:center">
+                <div aria-hidden="true" style="font-size:32px">✨</div>
+                <h3 style="margin:8px 0 0;font-size:16px;font-weight:800">Nothing here yet!</h3>
+                <p style="margin:6px 0 14px;font-size:12.5px;line-height:1.6;color:rgba(42,38,34,.78)">ยังไม่มีงานในรายการนี้<br>ลองเพิ่มงานใหม่กันเลย</p>
+                <button type="button" style="min-height:46px;padding:0 18px;border:0;border-radius:14px;background:#2a2622;color:#fff;font:700 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">+ Add Work</button>
+              </div>
+              <div style="flex:1;min-width:220px;padding:26px 18px;border-radius:18px;background:#fff;border:1px solid rgba(42,38,34,.1);text-align:center">
+                <div aria-hidden="true" style="font-size:32px">🔍</div>
+                <h3 style="margin:8px 0 0;font-size:16px;font-weight:800">ไม่พบงานที่ค้นหา</h3>
+                <p style="margin:6px 0 14px;font-size:12.5px;line-height:1.6;color:rgba(42,38,34,.78)">ลองเปลี่ยนคำค้น<br>หรือล้างตัวกรองดู</p>
+                <button type="button" style="min-height:46px;padding:0 18px;border:1px solid rgba(42,38,34,.16);border-radius:14px;background:#fbf7f0;font:700 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ล้างตัวกรอง</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="3b">
+      <div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Skeleton loading · Dashboard + list (desktop 1280)</div>
+      <div class="dv-card" style="width:1280px">
+        <div style="background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+          <header style="background:#2a2622;padding:16px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:18px">
+              <span style="display:flex;align-items:center;gap:9px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:14px">T</span><strong style="font-size:15px;color:#fbf7f0">Todolist</strong></span>
+              <div aria-hidden="true" style="display:flex;gap:6px">
+                <div style="width:92px;height:34px;border-radius:10px;background:linear-gradient(100deg,rgba(251,247,240,.1) 30%,rgba(251,247,240,.22) 50%,rgba(251,247,240,.1) 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+                <div style="width:92px;height:34px;border-radius:10px;background:linear-gradient(100deg,rgba(251,247,240,.1) 30%,rgba(251,247,240,.22) 50%,rgba(251,247,240,.1) 70%);background-size:320px 100%;animation:shim 1.2s .1s infinite linear"></div>
+                <div style="width:92px;height:34px;border-radius:10px;background:linear-gradient(100deg,rgba(251,247,240,.1) 30%,rgba(251,247,240,.22) 50%,rgba(251,247,240,.1) 70%);background-size:320px 100%;animation:shim 1.2s .2s infinite linear"></div>
+              </div>
+            </div>
+            <div aria-hidden="true" style="display:flex;align-items:center;gap:12px">
+              <div style="width:120px;height:34px;border-radius:11px;background:rgba(251,247,240,.12)"></div>
+              <div style="width:34px;height:34px;border-radius:50%;background:rgba(251,247,240,.16)"></div>
+            </div>
+          </header>
+          <p role="status" style="margin:0;padding:12px 34px 0;font-size:12.5px;font-weight:600;color:rgba(42,38,34,.74)">กำลังโหลดงานของคุณ…</p>
+          <main aria-busy="true" style="padding:14px 34px 34px;display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+            <section aria-hidden="true" style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:22px;padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+              <div style="width:220px;height:18px;border-radius:8px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+              <div style="height:64px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .1s infinite linear"></div>
+              <div style="height:64px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .2s infinite linear"></div>
+              <div style="height:64px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .3s infinite linear"></div>
+              <div style="height:64px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .4s infinite linear"></div>
+            </section>
+            <aside aria-hidden="true" style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:22px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px">
+              <div style="width:130px;height:16px;border-radius:8px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+              <div style="width:176px;height:176px;border-radius:50%;background:conic-gradient(#f4efe5 0 100%);box-shadow:inset 0 0 0 28px #f1ece1;animation:shim 1.2s infinite linear"></div>
+              <div style="width:100%;height:40px;border-radius:14px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .15s infinite linear"></div>
+              <div style="width:100%;height:40px;border-radius:14px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .3s infinite linear"></div>
+              <div style="width:100%;height:40px;border-radius:14px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .45s infinite linear"></div>
+            </aside>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="3c">
+      <div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>หน้ากรอกรายวิชา · modal เดียวกับ <a class="dv-oid" href="#5a">5a</a> (name / academicYear / semester)</div>
+      <div class="dv-card" style="width:820px">
+        <div style="background:rgba(42,38,34,.5);padding:34px;display:grid;place-items:center;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;animation:scrimIn .16s ease-out both">
+          <form role="dialog" aria-modal="true" aria-labelledby="subjtitle" style="width:100%;max-width:620px;background:#fbf7f0;border-radius:26px;box-shadow:0 40px 70px -40px #000;display:flex;flex-direction:column;overflow:hidden;color:#2a2622;animation:modalIn .24s cubic-bezier(.2,.9,.3,1) both">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 24px 16px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span aria-hidden="true" style="width:42px;height:42px;flex:none;border-radius:15px;background:#f5c33b;display:grid;place-items:center;font-size:19px">📚</span>
+                <div>
+                  <h2 id="subjtitle" style="margin:0;font-size:20px;font-weight:800;letter-spacing:-.4px">เพิ่มวิชาใหม่</h2>
+                  <p style="margin:3px 0 0;font-size:12px;color:rgba(42,38,34,.78)">ผูกกับบัญชี narudonponsueb1234@gmail.com</p>
+                </div>
+              </div>
+              <button type="button" aria-label="ปิด" style="width:40px;height:40px;flex:none;border-radius:13px;border:1px solid rgba(42,38,34,.14);background:#fff;font-size:15px;color:#2a2622;cursor:pointer;transition:background .16s,transform .12s" style-hover="background:#f1ece1" style-active="transform:scale(.94)">✕</button>
+            </div>
+
+            <div style="padding:0 24px;display:flex;flex-direction:column;gap:18px">
+              <section style="display:flex;flex-direction:column;gap:12px">
+                <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:10px">1</span>วิชาอะไร</h3>
+                <label for="nsname" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ชื่อวิชา
+                  <input id="nsname" type="text" placeholder="เช่น Golang, Finance and Accounting" style="min-height:52px;padding:0 15px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 15px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                </label>
+              </section>
+
+              <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+
+              <section style="display:flex;flex-direction:column;gap:12px">
+                <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:10px">2</span>เรียนเทอมไหน</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end">
+                  <label for="nsyear" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">ปีการศึกษา
+                    <select id="nsyear" style="min-height:52px;padding:0 13px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>2569</option><option>2570</option></select>
+                  </label>
+                  <label for="nssem" style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:700">เทอม
+                    <select id="nssem" style="min-height:52px;padding:0 13px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>1</option><option>2</option><option>3</option></select>
+                  </label>
+                </div>
+                <p style="margin:0;display:flex;gap:9px;align-items:center;padding:12px 14px;border-radius:14px;background:#e4f5ec;font-size:12.5px;font-weight:600;color:#155c40"><span aria-hidden="true">✓</span>ชื่อนี้ยังไม่มีในเทอม 1 / 2569 — ใช้ได้เลย</p>
+              </section>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;padding:16px 24px;margin-top:18px;background:#fff;border-top:1px solid rgba(42,38,34,.1)">
+              <p style="margin:0;flex:1;font-size:11.5px;color:rgba(42,38,34,.74)">เพิ่มแล้วค่อยใส่งานทีหลังได้</p>
+              <button type="button" style="min-height:52px;padding:0 20px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;transition:background .16s" style-hover="background:#f1ece1">ยกเลิก</button>
+              <button type="submit" style="min-height:52px;padding:0 26px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433;transition:transform .12s,box-shadow .12s" style-hover="transform:translateY(-1px);box-shadow:0 6px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">Add Subject</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="3d">
+      <div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>ฟอร์มวิชา · state ผิดพลาด (ชื่อว่าง / ชื่อซ้ำ) + ตอนกำลังบันทึก</div>
+      <div class="dv-card" style="width:820px">
+        <div style="background:#fbf7f0;padding:26px;display:flex;gap:18px;flex-wrap:wrap;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+          <div style="flex:1;min-width:320px;background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px">
+            <h3 style="margin:0;font-size:14px;font-weight:800">กรอกไม่ครบ / ชื่อซ้ำ</h3>
+            <label for="ename" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;font-weight:700">ชื่อวิชา
+              <input id="ename" type="text" value="Cactus" aria-invalid="true" aria-describedby="enameerr" style="min-height:50px;padding:0 14px;border-radius:14px;border:2px solid #c1443b;background:#fdeceb;font:600 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+            </label>
+            <p id="enameerr" style="margin:-6px 0 0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>มีวิชา “Cactus” ในเทอม 1 / 2569 อยู่แล้ว</p>
+            <label for="ename2" style="display:flex;flex-direction:column;gap:7px;font-size:12.5px;font-weight:700">ชื่อวิชา (ปล่อยว่าง)
+              <input id="ename2" type="text" value="" placeholder="ยังไม่ได้กรอก" aria-invalid="true" aria-describedby="ename2err" style="min-height:50px;padding:0 14px;border-radius:14px;border:2px solid #c1443b;background:#fdeceb;font:600 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+            </label>
+            <p id="ename2err" style="margin:-6px 0 0;display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:#8f2f27"><span aria-hidden="true">!</span>ต้องใส่ชื่อวิชาก่อนนะ</p>
+            <button type="button" disabled style="min-height:52px;border:0;border-radius:15px;background:#e5ded1;color:rgba(42,38,34,.6);font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:not-allowed">บันทึกวิชา</button>
+          </div>
+
+          <div style="flex:1;min-width:320px;display:flex;flex-direction:column;gap:14px">
+            <div style="background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px">
+              <h3 style="margin:0;font-size:14px;font-weight:800">กำลังบันทึก</h3>
+              <div aria-hidden="true" style="height:50px;border-radius:14px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+              <button type="button" aria-busy="true" style="min-height:52px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:progress;display:flex;align-items:center;justify-content:center;gap:10px"><span aria-hidden="true" style="width:16px;height:16px;border-radius:50%;border:2.5px solid rgba(251,247,240,.35);border-top-color:#f5c33b;animation:spin .8s linear infinite"></span>กำลังบันทึก…</button>
+            </div>
+            <div style="background:#fff;border:1px solid rgba(42,38,34,.1);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px">
+              <h3 style="margin:0;font-size:14px;font-weight:800">บันทึกสำเร็จ</h3>
+              <div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:#e4f5ec;border:1px solid rgba(31,122,86,.28)">
+                <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:11px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;animation:pop .5s both">✓</span>
+                <div><div style="font-size:13.5px;font-weight:700;color:#155c40">เพิ่มวิชา Golang แล้ว</div><div style="font-size:11.5px;color:#1f7a56">เทอม 1 / 2569 · เพิ่มงานแรกได้เลย</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="3e">
+      <div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>Mobile 390 · toast / banner / skeleton / ฟอร์มวิชาแบบ sheet (UI เดียวกับ Add Work)</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <header style="padding:14px 16px 10px;display:flex;flex-direction:column;gap:10px">
+              <h1 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.3px">แจ้งเตือนบนมือถือ</h1>
+              <div style="display:flex;gap:11px;align-items:center;padding:13px;border-radius:16px;background:#2a2622;color:#fbf7f0;box-shadow:0 14px 26px -20px rgba(42,38,34,.9);animation:rise .4s both">
+                <span aria-hidden="true" style="width:30px;height:30px;flex:none;border-radius:10px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700;animation:pop .5s .15s both">✓</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">Done! เยี่ยมมาก 🎉</div><div style="font-size:11px;color:rgba(251,247,240,.8)">Lab 1 เสร็จแล้ว · เหลือ 5 งาน</div></div>
+                <button type="button" aria-label="ปิดการแจ้งเตือน" style="width:44px;height:44px;flex:none;border:0;border-radius:12px;background:rgba(251,247,240,.14);color:#fbf7f0;font-size:13px;cursor:pointer">✕</button>
+              </div>
+              <div style="display:flex;gap:11px;align-items:center;padding:13px;border-radius:16px;background:#fdeceb;border:1px solid rgba(193,68,59,.4)">
+                <span aria-hidden="true" style="width:30px;height:30px;flex:none;border-radius:10px;background:#c1443b;color:#fff;display:grid;place-items:center;font-size:15px;font-weight:700">!</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#8f2f27">บันทึกไม่สำเร็จ</div><div style="font-size:11px;color:#7a2620">แตะเพื่อลองอีกครั้ง</div></div>
+              </div>
+              <div style="display:flex;gap:11px;align-items:center;padding:13px;border-radius:16px;background:#fff;border:1px solid rgba(42,38,34,.1)">
+                <span aria-hidden="true" style="width:30px;height:30px;flex:none;border-radius:10px;background:#f1ece1;display:grid;place-items:center;font-size:14px">🗑️</span>
+                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">ลบงานแล้ว</div><div style="font-size:11px;color:rgba(42,38,34,.74)">Post test 1</div></div>
+                <button type="button" style="flex:none;min-height:38px;padding:0 12px;border:1px solid rgba(42,38,34,.16);border-radius:11px;background:#fbf7f0;font:700 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">Undo</button>
+              </div>
+            </header>
+            <main style="padding:6px 16px 16px;display:flex;flex-direction:column;gap:10px">
+              <h2 style="margin:4px 0 0;font-size:12.5px;font-weight:800;letter-spacing:.08em;color:rgba(42,38,34,.74)">BANNER</h2>
+              <div style="display:flex;gap:10px;align-items:center;padding:13px;border-radius:16px;background:#fef6e0;border:1px solid rgba(217,180,51,.5)">
+                <span aria-hidden="true" style="font-size:16px">⏰</span>
+                <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700">มี 1 งานเลยกำหนด</div><div style="font-size:11px;color:rgba(42,38,34,.78)">Java · ส่ง 8 ก.ค.</div></div>
+                <a href="#2e" style="flex:none;font-size:11.5px;font-weight:700;color:#7d5806;white-space:nowrap">ดูงาน</a>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:13px;border-radius:16px;background:#f1ece1;border:1px solid rgba(42,38,34,.16)">
+                <span aria-hidden="true" style="font-size:16px">📡</span>
+                <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700">ออฟไลน์อยู่</div><div style="font-size:11px;color:rgba(42,38,34,.78)">จะบันทึกให้เมื่อกลับมาออนไลน์</div></div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;padding:13px;border-radius:16px;background:#e9effe;border:1px solid rgba(63,95,201,.28)">
+                <span aria-hidden="true" style="font-size:16px">🔒</span>
+                <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:700;color:#24357c">เซสชันหมดอายุ</div><div style="font-size:11px;color:#2f4fb8">Sign in อีกครั้ง</div></div>
+              </div>
+            </main>
+            <nav aria-label="เมนู" style="margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <header style="background:#2a2622;padding:16px 16px 20px;border-radius:0 0 24px 24px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="display:flex;align-items:center;gap:8px"><span aria-hidden="true" style="width:30px;height:30px;border-radius:10px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:13px">T</span><strong style="font-size:14px;color:#fbf7f0">Todolist</strong></span>
+                <div aria-hidden="true" style="width:32px;height:32px;border-radius:50%;background:rgba(251,247,240,.16)"></div>
+              </div>
+              <div aria-hidden="true" style="width:70%;height:26px;border-radius:9px;background:linear-gradient(100deg,rgba(251,247,240,.1) 30%,rgba(251,247,240,.24) 50%,rgba(251,247,240,.1) 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+              <div style="display:flex;gap:8px">
+                <div aria-hidden="true" style="flex:1;height:58px;border-radius:16px;background:rgba(251,247,240,.1)"></div>
+                <div aria-hidden="true" style="flex:1;height:58px;border-radius:16px;background:rgba(251,247,240,.1)"></div>
+                <div aria-hidden="true" style="flex:1;height:58px;border-radius:16px;background:rgba(251,247,240,.1)"></div>
+              </div>
+            </header>
+            <p role="status" style="margin:0;padding:14px 16px 0;font-size:12.5px;font-weight:600;color:rgba(42,38,34,.74)">กำลังโหลดงานของคุณ…</p>
+            <main aria-busy="true" style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px">
+              <div aria-hidden="true" style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center">
+                <div style="width:112px;height:112px;flex:none;border-radius:50%;background:#f4efe5;box-shadow:inset 0 0 0 30px #f1ece1;animation:shim 1.2s infinite linear"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+                  <div style="height:26px;border-radius:10px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s infinite linear"></div>
+                  <div style="height:26px;border-radius:10px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .15s infinite linear"></div>
+                  <div style="height:26px;border-radius:10px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .3s infinite linear"></div>
+                </div>
+              </div>
+              <div aria-hidden="true" style="height:74px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .1s infinite linear"></div>
+              <div aria-hidden="true" style="height:74px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .25s infinite linear"></div>
+              <div aria-hidden="true" style="height:74px;border-radius:16px;background:linear-gradient(100deg,#f4efe5 30%,#fdfaf4 50%,#f4efe5 70%);background-size:320px 100%;animation:shim 1.2s .4s infinite linear"></div>
+            </main>
+            <nav aria-label="เมนู" style="margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;background:rgba(42,38,34,.45);font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;display:flex;flex-direction:column;justify-content:flex-end">
+            <form style="background:#fbf7f0;color:#2a2622;border-radius:26px 26px 0 0;display:flex;flex-direction:column;max-height:700px;overflow:hidden;animation:sheetUp .3s cubic-bezier(.2,.9,.3,1) both">
+              <div style="padding:12px 18px 14px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid rgba(42,38,34,.1)">
+                <div aria-hidden="true" style="width:44px;height:5px;border-radius:99px;background:rgba(42,38,34,.22);margin:0 auto"></div>
+                <div style="display:flex;align-items:center;gap:11px">
+                  <span aria-hidden="true" style="width:38px;height:38px;flex:none;border-radius:14px;background:#f5c33b;display:grid;place-items:center;font-size:17px">📚</span>
+                  <div style="flex:1;min-width:0"><h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-.3px">เพิ่มวิชาใหม่</h2><p style="margin:2px 0 0;font-size:11.5px;color:rgba(42,38,34,.78)">ผูกกับบัญชีที่ล็อกอินอยู่</p></div>
+                  <button type="button" aria-label="ปิด" style="width:44px;height:44px;flex:none;border-radius:13px;border:1px solid rgba(42,38,34,.14);background:#fff;font-size:15px;color:#2a2622;cursor:pointer">✕</button>
+                </div>
+              </div>
+              <div style="padding:16px 18px;display:flex;flex-direction:column;gap:16px;overflow:auto">
+                <section style="display:flex;flex-direction:column;gap:11px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:17px;height:17px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:9.5px">1</span>วิชาอะไร</h3>
+                  <label for="msname" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ชื่อวิชา
+                    <input id="msname" type="text" placeholder="เช่น Golang, Finance and Accounting" style="min-height:52px;padding:0 14px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                  </label>
+                </section>
+                <div aria-hidden="true" style="height:1px;background:rgba(42,38,34,.1)"></div>
+                <section style="display:flex;flex-direction:column;gap:11px">
+                  <h3 style="margin:0;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.1em;color:rgba(42,38,34,.74)"><span aria-hidden="true" style="width:17px;height:17px;border-radius:6px;background:#2a2622;color:#f5c33b;display:grid;place-items:center;font-size:9.5px">2</span>เรียนเทอมไหน</h3>
+                  <label for="msyear" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">ปีการศึกษา
+                    <select id="msyear" style="min-height:52px;padding:0 12px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>2569</option><option>2570</option></select>
+                  </label>
+                  <label for="mssem" style="display:flex;flex-direction:column;gap:6px;font-size:12.5px;font-weight:700">เทอม
+                    <select id="mssem" style="min-height:52px;padding:0 12px;border-radius:15px;border:1px solid rgba(42,38,34,.16);background:#fff;font:600 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"><option>1</option><option>2</option><option>3</option></select>
+                  </label>
+                  <p style="margin:0;display:flex;gap:8px;align-items:center;padding:11px 13px;border-radius:14px;background:#e4f5ec;font-size:12px;font-weight:600;color:#155c40"><span aria-hidden="true">✓</span>ชื่อนี้ยังไม่มีในเทอม 1 / 2569</p>
+                </section>
+              </div>
+              <div style="padding:14px 18px 18px;background:#fff;border-top:1px solid rgba(42,38,34,.1);display:flex;gap:9px">
+                <button type="button" style="flex:none;min-height:52px;padding:0 18px;border:1px solid rgba(42,38,34,.18);border-radius:15px;background:#fbf7f0;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">ยกเลิก</button>
+                <button type="submit" style="flex:1;min-height:52px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">Add Subject</button>
+              </div>
+            </form>
+            <nav aria-label="เมนู" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)"><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a></nav>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Try next: “ทำ tablet 768 ของชุดนี้” · “ขอ toast แบบมี progress bar นับเวลา” · “เพิ่มหน้ากรอกงาน (task) แบบเต็มหน้าจอบน desktop”</p>
+</section>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Todolist — ธีมเดียวทั้งระบบ: desktop 1280 + mobile 390</span></div>
+  <p class="dv-note">ทุกหน้าใช้ nav เดียวกัน (แถบดำ + pill + ตัวเลือกเทอม + avatar), การ์ดขาวมุม 22px, และชุดสีสถานะชุดเดียว: 🕒 เหลือง · ⚡ น้ำเงิน · ✓ เขียว · ! แดง. Dashboard เหลือ hero + timeline + donut. Login เหลือประโยคเดียว + ปุ่ม Google. Mobile 390 จัด layout ใหม่ทั้งหมด — bottom tabs, การ์ดเรียงตั้ง, รายละเอียดเป็น bottom sheet.</p>
+
+  <div class="dv-opts">
+
+    <!-- 2a Dashboard -->
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Dashboard · hero งานที่ใกล้ที่สุด + timeline + donut (ไม่มี tips) · 1280</div>
+      <div class="dv-card" style="width:1280px">
+        <div style="min-height:780px;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+          <header style="background:#2a2622;color:#fbf7f0;padding:16px 34px 34px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px">
+              <div style="display:flex;align-items:center;gap:18px">
+                <span style="display:flex;align-items:center;gap:9px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:14px">T</span><strong style="font-size:15px;letter-spacing:-.2px">Todolist</strong></span>
+                <nav aria-label="เมนูหลัก" style="display:flex;gap:4px;background:rgba(251,247,240,.1);padding:5px;border-radius:14px">
+                  <a href="#2a" style="padding:9px 15px;border-radius:10px;background:#fbf7f0;color:#2a2622;font-size:13px;font-weight:700;text-decoration:none">Dashboard</a>
+                  <a href="#2b" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">งานทั้งหมด</a>
+                  <a href="#2c" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">วิชาเรียน</a>
+                </nav>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <button type="button" style="min-height:40px;padding:0 13px;border:1px solid rgba(251,247,240,.28);border-radius:12px;background:transparent;color:#fbf7f0;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">ปี 2569 · เทอม 1 ▾</button>
+                <span style="width:34px;height:34px;border-radius:99px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:700;font-size:13px" title="narudonponsueb1234@gmail.com">N</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:34px;align-items:center">
+              <div style="flex:1;min-width:300px">
+                <p style="margin:0 0 7px;font-size:12px;font-weight:700;letter-spacing:.14em;color:#f5c33b">งานที่ใกล้ที่สุด</p>
+                <h1 style="margin:0;font-size:38px;font-weight:800;letter-spacing:-1.2px;line-height:1.1">Lab 1 · Cactus</h1>
+                <p style="margin:9px 0 0;font-size:14px;color:rgba(251,247,240,.82)">Homework · ส่ง 23 ก.ค. 2026 · กำลังทำอยู่</p>
+                <div style="display:flex;gap:10px;margin-top:18px">
+                  <button type="button" style="min-height:46px;padding:0 20px;border:0;border-radius:14px;background:#f5c33b;color:#2a2622;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;transition:transform .13s" style-hover="transform:translateY(-2px)" style-active="transform:translateY(1px)">Start Working</button>
+                  <a href="#2b" style="min-height:46px;display:inline-flex;align-items:center;padding:0 18px;border:1px solid rgba(251,247,240,.3);border-radius:14px;color:#fbf7f0;text-decoration:none;font:600 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">ดูรายละเอียด</a>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex:none">
+                <div style="width:100px;padding:16px 10px;border-radius:20px;background:rgba(251,247,240,.1);text-align:center"><div style="font-size:34px;font-weight:800;line-height:1;color:#f5c33b">3</div><div style="font-size:10.5px;font-weight:700;color:rgba(251,247,240,.8);margin-top:5px">วันที่เหลือ</div></div>
+                <div style="width:100px;padding:16px 10px;border-radius:20px;background:rgba(193,68,59,.28);text-align:center"><div style="font-size:34px;font-weight:800;line-height:1;color:#ffc0ba">1</div><div style="font-size:10.5px;font-weight:700;color:#ffc0ba;margin-top:5px">เลยกำหนด</div></div>
+                <div style="width:100px;padding:16px 10px;border-radius:20px;background:rgba(251,247,240,.1);text-align:center"><div style="font-size:34px;font-weight:800;line-height:1">{{ total6 }}</div><div style="font-size:10.5px;font-weight:700;color:rgba(251,247,240,.8);margin-top:5px">งานที่เหลือ</div></div>
+              </div>
+            </div>
+          </header>
+
+          <main style="padding:24px 34px 36px;display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+            <section aria-label="ไทม์ไลน์กำหนดส่ง" style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:22px;padding:22px 24px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:18px">
+                <h2 style="margin:0;font-size:15px;font-weight:700">ไทม์ไลน์ 3 สัปดาห์ข้างหน้า</h2>
+                <a href="#2b" style="font-size:12.5px;font-weight:700;text-decoration:none;color:#1b5aa8">ดูทั้งหมด →</a>
+              </div>
+              <ol style="list-style:none;margin:0;padding:0 0 0 22px;border-left:2px dashed rgba(42,38,34,.16);display:flex;flex-direction:column;gap:14px">
+                <li style="position:relative">
+                  <span aria-hidden="true" style="position:absolute;left:-30px;top:15px;width:15px;height:15px;border-radius:99px;background:#c1443b;border:3px solid #fff;box-shadow:0 0 0 2px #c1443b"></span>
+                  <article style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:#fdeceb;border:1px solid rgba(193,68,59,.32);transition:transform .16s" style-hover="transform:translateX(4px)">
+                    <strong style="font-size:14px;flex:1;min-width:150px">หพเพเกพเกพเ</strong>
+                    <span style="font-size:12px;color:rgba(42,38,34,.74)">Java · Homework</span>
+                    <span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#c1443b;color:#fff">เลยกำหนด 12 วัน</span>
+                  </article>
+                </li>
+                <li style="position:relative">
+                  <span aria-hidden="true" style="position:absolute;left:-30px;top:15px;width:15px;height:15px;border-radius:99px;background:#3f5fc9;border:3px solid #fff;box-shadow:0 0 0 2px #3f5fc9"></span>
+                  <article style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:#fbf7f0;border:1px solid rgba(42,38,34,.08);transition:transform .16s" style-hover="transform:translateX(4px)">
+                    <strong style="font-size:14px;flex:1;min-width:150px">Lab 1</strong>
+                    <span style="font-size:12px;color:rgba(42,38,34,.74)">Cactus · 23 ก.ค. · อีก 3 วัน</span>
+                    <span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span>
+                  </article>
+                </li>
+                <li style="position:relative">
+                  <span aria-hidden="true" style="position:absolute;left:-30px;top:15px;width:15px;height:15px;border-radius:99px;background:#f5c33b;border:3px solid #fff;box-shadow:0 0 0 2px #f5c33b"></span>
+                  <article style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:#fbf7f0;border:1px solid rgba(42,38,34,.08);transition:transform .16s" style-hover="transform:translateX(4px)">
+                    <strong style="font-size:14px;flex:1;min-width:150px">Lab2</strong>
+                    <span style="font-size:12px;color:rgba(42,38,34,.74)">Testing 1 · Exam · 27 ก.ค.</span>
+                    <span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                  </article>
+                </li>
+                <li style="position:relative">
+                  <span aria-hidden="true" style="position:absolute;left:-30px;top:15px;width:15px;height:15px;border-radius:99px;background:#f5c33b;border:3px solid #fff;box-shadow:0 0 0 2px #f5c33b"></span>
+                  <article style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:#fbf7f0;border:1px solid rgba(42,38,34,.08);transition:transform .16s" style-hover="transform:translateX(4px)">
+                    <strong style="font-size:14px;flex:1;min-width:150px">Post test 1</strong>
+                    <span style="font-size:12px;color:rgba(42,38,34,.74)">StartUp · 5 ส.ค.</span>
+                    <span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                  </article>
+                </li>
+                <li style="position:relative">
+                  <span aria-hidden="true" style="position:absolute;left:-30px;top:15px;width:15px;height:15px;border-radius:99px;background:#f5c33b;border:3px solid #fff;box-shadow:0 0 0 2px #f5c33b"></span>
+                  <article style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-radius:16px;background:#fbf7f0;border:1px solid rgba(42,38,34,.08);transition:transform .16s" style-hover="transform:translateX(4px)">
+                    <strong style="font-size:14px;flex:1;min-width:150px">แยกประเภศประบองเพรช</strong>
+                    <span style="font-size:12px;color:rgba(42,38,34,.74)">Cactus · 6 ส.ค.</span>
+                    <span style="white-space:nowrap;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                  </article>
+                </li>
+              </ol>
+            </section>
+
+            <aside style="display:flex;flex-direction:column;gap:14px">
+              <article style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:22px;padding:20px;text-align:center">
+                <h2 style="margin:0 0 14px;font-size:14.5px;font-weight:700">สถานะรวม</h2>
+                <div style="position:relative;width:176px;height:176px;margin:0 auto">
+                  <svg viewBox="0 0 200 200" width="176" height="176" role="img" aria-label="ยังไม่ทำ 4, กำลังทำ 2, เสร็จแล้ว 3 จาก 9 งาน">
+                    <circle cx="100" cy="100" r="76" fill="none" stroke="#f1ece1" stroke-width="28"></circle>
+                    <g transform="rotate(-90 100 100)" stroke-width="28" fill="none" stroke-linecap="round">
+                      <circle cx="100" cy="100" r="76" stroke="#f5c33b" stroke-dasharray="206 478" stroke-dashoffset="0" style="animation:d1 1s .1s both cubic-bezier(.3,.9,.3,1)"></circle>
+                      <circle cx="100" cy="100" r="76" stroke="#3f5fc9" stroke-dasharray="100 478" stroke-dashoffset="-212" style="animation:d2 1s .32s both cubic-bezier(.3,.9,.3,1)"></circle>
+                      <circle cx="100" cy="100" r="76" stroke="#1f7a56" stroke-dasharray="153 478" stroke-dashoffset="-318" style="animation:d3 1s .54s both cubic-bezier(.3,.9,.3,1)"></circle>
+                    </g>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:grid;place-content:center"><div style="font-size:32px;font-weight:800;line-height:1;letter-spacing:-1px">{{ total }}</div><div style="font-size:10.5px;font-weight:700;color:rgba(42,38,34,.72);letter-spacing:.1em">TOTAL งาน</div></div>
+                </div>
+                <ul style="list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;text-align:left">
+                  <li style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#fef6e0"><span aria-hidden="true" style="width:22px;height:22px;border-radius:8px;background:#f5c33b;display:grid;place-items:center;font-size:11px">🕒</span><span style="flex:1;font-size:12.5px;font-weight:600">ยังไม่ได้ทำ</span><strong style="font-size:17px">4</strong></li>
+                  <li style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#e9effe"><span aria-hidden="true" style="width:22px;height:22px;border-radius:8px;background:#3f5fc9;color:#fff;display:grid;place-items:center;font-size:11px">⚡</span><span style="flex:1;font-size:12.5px;font-weight:600">In Progress</span><strong style="font-size:17px">2</strong></li>
+                  <li style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#e4f5ec"><span aria-hidden="true" style="width:22px;height:22px;border-radius:8px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700">✓</span><span style="flex:1;font-size:12.5px;font-weight:600">Completed</span><strong style="font-size:17px">3</strong></li>
+                </ul>
+              </article>
+              
+            </aside>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2b My Work -->
+    <div class="dv-opt" id="2b">
+      <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>งานทั้งหมด · nav เดียวกับ <a class="dv-oid" href="#2a">2a</a> + drawer รายละเอียด · 1280</div>
+      <div class="dv-card" style="width:1280px">
+        <div style="background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+          <header style="background:#2a2622;color:#fbf7f0;padding:16px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:18px">
+              <span style="display:flex;align-items:center;gap:9px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:14px">T</span><strong style="font-size:15px;letter-spacing:-.2px">Todolist</strong></span>
+              <nav aria-label="เมนูหลัก" style="display:flex;gap:4px;background:rgba(251,247,240,.1);padding:5px;border-radius:14px">
+                <a href="#2a" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">Dashboard</a>
+                <a href="#2b" style="padding:9px 15px;border-radius:10px;background:#fbf7f0;color:#2a2622;font-size:13px;font-weight:700;text-decoration:none">งานทั้งหมด</a>
+                <a href="#2c" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">วิชาเรียน</a>
+              </nav>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button type="button" style="min-height:40px;padding:0 13px;border:1px solid rgba(251,247,240,.28);border-radius:12px;background:transparent;color:#fbf7f0;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ปี 2569 · เทอม 1 ▾</button>
+              <span style="width:34px;height:34px;border-radius:99px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:700;font-size:13px">N</span>
+            </div>
+          </header>
+
+          <div style="display:grid;grid-template-columns:1fr 380px;min-height:720px">
+            <main style="padding:26px 28px 36px;display:flex;flex-direction:column;gap:16px;min-width:0">
+              <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+                <h1 style="margin:0;font-size:24px;font-weight:800;letter-spacing:-.5px">งานทั้งหมด <span style="font-size:14px;font-weight:600;color:rgba(42,38,34,.72)">9 งาน</span></h1>
+                <button type="button" style="min-height:44px;padding:0 18px;border:0;border-radius:14px;background:#2a2622;color:#fff;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">+ Add Work</button>
+              </div>
+
+              <form role="search" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+                <label style="flex:1;min-width:220px;display:flex;align-items:center;gap:9px;height:46px;padding:0 14px;background:#fff;border:1px solid rgba(42,38,34,.12);border-radius:14px">
+                  <span aria-hidden="true" style="font-size:14px;opacity:.6">🔍</span>
+                  <input type="search" placeholder="ค้นหางาน หรือวิชา…" aria-label="ค้นหางาน" style="flex:1;min-width:0;border:0;outline:none;background:transparent;font:500 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622">
+                </label>
+                <label style="display:flex;align-items:center;gap:7px;height:46px;padding:0 12px;background:#fff;border:1px solid rgba(42,38,34,.12);border-radius:14px;font-size:12.5px;font-weight:600;color:rgba(42,38,34,.74)">วิชา<select style="border:0;background:transparent;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;outline:none"><option>ทั้งหมด</option><option>Cactus</option><option>Testing 1</option><option>Web</option><option>Java</option><option>StartUp</option></select></label>
+                <label style="display:flex;align-items:center;gap:7px;height:46px;padding:0 12px;background:#fff;border:1px solid rgba(42,38,34,.12);border-radius:14px;font-size:12.5px;font-weight:600;color:rgba(42,38,34,.74)">ประเภท<select style="border:0;background:transparent;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;outline:none"><option>ทั้งหมด</option><option>Homework</option><option>Assignment</option><option>Exam</option></select></label>
+              </form>
+
+              <div role="tablist" aria-label="กรองตามสถานะ" style="display:flex;gap:8px;flex-wrap:wrap">
+                <button type="button" role="tab" aria-selected="true" style="min-height:40px;padding:0 15px;border:0;border-radius:99px;background:#2a2622;color:#fff;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ทั้งหมด · 9</button>
+                <button type="button" role="tab" aria-selected="false" style="min-height:40px;padding:0 15px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;transition:background .16s" style-hover="background:#fef6e0">🕒 ยังไม่ได้ทำ · 4</button>
+                <button type="button" role="tab" aria-selected="false" style="min-height:40px;padding:0 15px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;transition:background .16s" style-hover="background:#e9effe">⚡ In Progress · 2</button>
+                <button type="button" role="tab" aria-selected="false" style="min-height:40px;padding:0 15px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;transition:background .16s" style-hover="background:#e4f5ec">✓ Completed · 3</button>
+              </div>
+
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px">
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fff;border:1px solid rgba(193,68,59,.3);border-left:5px solid #c1443b;border-radius:18px;transition:transform .16s,box-shadow .16s" style-hover="transform:translateY(-2px);box-shadow:0 14px 26px -20px rgba(42,38,34,.6)">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: หพเพเกพเกพเ" style="width:28px;height:28px;flex:none;border-radius:9px;border:2px solid rgba(42,38,34,.3);background:#fff;cursor:pointer;transition:border-color .16s" style-hover="border-color:#1f7a56"></button>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700">หพเพเกพเกพเ</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.74)">Java · Homework · ส่ง 8 ก.ค. 2026</p></div>
+                  <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="flex:none;white-space:nowrap;font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></sc-if>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#c1443b;color:#fff">เลยกำหนด</span>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                </article></li>
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #3f5fc9;border-radius:18px;box-shadow:0 12px 26px -22px rgba(42,38,34,.7);transition:transform .16s" style-hover="transform:translateY(-2px)">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: Lab 1" style="width:28px;height:28px;flex:none;border-radius:9px;border:2px solid rgba(42,38,34,.3);background:#fff;cursor:pointer;transition:border-color .16s" style-hover="border-color:#1f7a56"></button>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700">Lab 1</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.74)">Cactus · Homework · ส่ง 23 ก.ค. · อีก 3 วัน</p></div>
+                  <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="flex:none;white-space:nowrap;font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></sc-if>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span>
+                </article></li>
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b;border-radius:18px;transition:transform .16s" style-hover="transform:translateY(-2px)">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: Lab2" style="width:28px;height:28px;flex:none;border-radius:9px;border:2px solid rgba(42,38,34,.3);background:#fff;cursor:pointer;transition:border-color .16s" style-hover="border-color:#1f7a56"></button>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700">Lab2</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.74)">Testing 1 · Exam · ส่ง 27 ก.ค. · อีก 7 วัน</p></div>
+                  <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="flex:none;white-space:nowrap;font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></sc-if>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                </article></li>
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b;border-radius:18px;transition:transform .16s" style-hover="transform:translateY(-2px)">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: แยกประเภศประบองเพรช" style="width:28px;height:28px;flex:none;border-radius:9px;border:2px solid rgba(42,38,34,.3);background:#fff;cursor:pointer;transition:border-color .16s" style-hover="border-color:#1f7a56"></button>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700">แยกประเภศประบองเพรช</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.74)">Cactus · Assignment · ส่ง 6 ส.ค. · อีก 17 วัน</p></div>
+                  <sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="flex:none;white-space:nowrap;font-size:11px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fef6e0;color:#7d5806">■ Medium</span></sc-if>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span>
+                </article></li>
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fdfbf6;border:1px solid rgba(42,38,34,.08);border-left:5px solid #1f7a56;border-radius:18px;opacity:.85">
+                  <span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:9px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700;animation:pop .4s both">✓</span>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700;text-decoration:line-through;text-decoration-color:rgba(42,38,34,.35)">Lab Reuse Components</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.72)">Web · Assignment · เสร็จแล้ว</p></div>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#e4f5ec;color:#1f7a56">✓ Done</span>
+                </article></li>
+                <li><article style="display:flex;gap:14px;align-items:center;padding:16px;background:#fdfbf6;border:1px solid rgba(42,38,34,.08);border-left:5px solid #1f7a56;border-radius:18px;opacity:.85">
+                  <span aria-hidden="true" style="width:28px;height:28px;flex:none;border-radius:9px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700">✓</span>
+                  <div style="flex:1;min-width:0"><h3 style="margin:0;font-size:15px;font-weight:700;text-decoration:line-through;text-decoration-color:rgba(42,38,34,.35)">Study Start-Up</h3><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.72)">Web · Homework · เสร็จแล้ว</p></div>
+                  <span style="flex:none;white-space:nowrap;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:#e4f5ec;color:#1f7a56">✓ Done</span>
+                </article></li>
+              </ul>
+            </main>
+
+            <aside aria-label="รายละเอียดงาน" style="background:#fff;border-left:1px solid rgba(42,38,34,.1);padding:26px 26px 32px;display:flex;flex-direction:column;gap:18px;animation:rise .35s both">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                <div>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span>
+                  <h2 style="margin:12px 0 0;font-size:22px;font-weight:800;letter-spacing:-.4px">Lab 1</h2>
+                  <p style="margin:6px 0 0;font-size:13px;color:rgba(42,38,34,.74)">Cactus · Homework</p>
+                </div>
+                <button type="button" aria-label="ปิดรายละเอียด" style="width:38px;height:38px;flex:none;border-radius:12px;border:1px solid rgba(42,38,34,.12);background:#fbf7f0;cursor:pointer;font-size:15px;color:#2a2622;transition:background .16s" style-hover="background:#f1ece1">✕</button>
+              </div>
+              <div style="padding:16px;border-radius:16px;background:#fef6e0;display:flex;gap:12px;align-items:center">
+                <div style="font-size:28px;font-weight:800;line-height:1">3</div>
+                <div style="font-size:12.5px;font-weight:600;line-height:1.4">วันก่อนถึงกำหนด<br><span style="font-weight:500;color:rgba(42,38,34,.74)">ส่ง 23 ก.ค. 2026</span></div>
+              </div>
+              <dl style="margin:0;display:grid;grid-template-columns:96px 1fr;gap:12px 10px;font-size:13px">
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">Priority</dt><dd style="margin:0"><span style="font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">ประเภท</dt><dd style="margin:0;font-weight:600">Homework</dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">เทอม</dt><dd style="margin:0;font-weight:600">1 / 2569</dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">สร้างเมื่อ</dt><dd style="margin:0;font-weight:600">19 ก.ค. 2026 · 11:45</dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">เจ้าของ</dt><dd style="margin:0;font-weight:600;word-break:break-all">narudonponsueb1234@gmail.com</dd>
+              </dl>
+              <div>
+                <label for="dnote2" style="display:block;font-size:12px;font-weight:700;color:rgba(42,38,34,.72);margin-bottom:7px">โน้ต</label>
+                <textarea id="dnote2" rows="3" style="width:100%;box-sizing:border-box;padding:13px;border-radius:14px;border:1px solid rgba(42,38,34,.14);background:#fbf7f0;font:500 13px/1.5 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;resize:none">draw cactus and write detail of cactus</textarea>
+              </div>
+              <fieldset style="margin:0;padding:0;border:0">
+                <legend style="font-size:12px;font-weight:700;color:rgba(42,38,34,.72);margin-bottom:8px">เปลี่ยนสถานะ</legend>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button type="button" style="min-height:44px;padding:0 14px;border:1px solid rgba(42,38,34,.14);border-radius:13px;background:#fff;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:#2a2622;white-space:nowrap" style-hover="background:#fef6e0">🕒 Not Started</button>
+                  <button type="button" style="min-height:44px;padding:0 14px;border:2px solid #3f5fc9;border-radius:13px;background:#e9effe;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:#2f4fb8;white-space:nowrap">⚡ In Progress</button>
+                  <button type="button" style="min-height:44px;padding:0 14px;border:0;border-radius:13px;background:#1f7a56;color:#fff;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap;transition:transform .13s" style-hover="transform:translateY(-1px)">Done!</button>
+                </div>
+              </fieldset>
+              <div style="margin-top:auto;display:flex;gap:10px">
+                <button type="button" style="flex:1;min-height:46px;border:0;border-radius:14px;background:#2a2622;color:#fff;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">บันทึก</button>
+                <button type="button" style="min-height:46px;padding:0 16px;border:1px solid rgba(193,68,59,.4);border-radius:14px;background:#fff;color:#b8433a;font:600 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;transition:background .16s" style-hover="background:#fdeceb">ลบ</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2c Subjects + Admin -->
+    <div class="dv-opt" id="2c">
+      <div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>วิชาเรียน + Admin · nav เดียวกัน · 1280</div>
+      <div class="dv-card" style="width:1280px">
+        <div style="background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+          <header style="background:#2a2622;color:#fbf7f0;padding:16px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:18px">
+              <span style="display:flex;align-items:center;gap:9px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:14px">T</span><strong style="font-size:15px;letter-spacing:-.2px">Todolist</strong></span>
+              <nav aria-label="เมนูหลัก" style="display:flex;gap:4px;background:rgba(251,247,240,.1);padding:5px;border-radius:14px">
+                <a href="#2a" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">Dashboard</a>
+                <a href="#2b" style="padding:9px 15px;border-radius:10px;color:#fbf7f0;font-size:13px;font-weight:500;text-decoration:none;transition:background .16s" style-hover="background:rgba(251,247,240,.14)">งานทั้งหมด</a>
+                <a href="#2c" style="padding:9px 15px;border-radius:10px;background:#fbf7f0;color:#2a2622;font-size:13px;font-weight:700;text-decoration:none">วิชาเรียน</a>
+              </nav>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button type="button" style="min-height:40px;padding:0 13px;border:1px solid rgba(251,247,240,.28);border-radius:12px;background:transparent;color:#fbf7f0;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ปี 2569 · เทอม 1 ▾</button>
+              <span style="width:34px;height:34px;border-radius:99px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:700;font-size:13px">N</span>
+            </div>
+          </header>
+
+          <div style="padding:26px 34px 36px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+              <div>
+                <h1 style="margin:0;font-size:24px;font-weight:800;letter-spacing:-.5px">วิชาเรียน</h1>
+                <p style="margin:5px 0 0;font-size:13px;color:rgba(42,38,34,.74)">9 วิชา · เทอม 1 / 2569</p>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div role="tablist" aria-label="สลับหน้า" style="display:flex;gap:4px;background:#f1ece1;padding:4px;border-radius:13px">
+                  <button type="button" role="tab" aria-selected="true" style="min-height:38px;padding:0 14px;border:0;border-radius:10px;background:#fff;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:#2a2622">วิชาของฉัน</button>
+                  <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}"><button type="button" role="tab" aria-selected="false" style="min-height:38px;padding:0 14px;border:0;border-radius:10px;background:transparent;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:rgba(42,38,34,.74)">Admin · Users</button></sc-if>
+                </div>
+                <button type="button" style="min-height:44px;padding:0 16px;border:0;border-radius:14px;background:#2a2622;color:#fff;font:700 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;box-shadow:0 5px 0 #d9b433" style-active="transform:translateY(3px);box-shadow:0 2px 0 #d9b433">+ Add Subject</button>
+              </div>
+            </div>
+
+            <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px;transition:transform .16s,box-shadow .16s" style-hover="transform:translateY(-3px);box-shadow:0 16px 28px -22px rgba(42,38,34,.6)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#fef6e0;display:grid;place-items:center;font-size:16px">🌵</span><h2 style="margin:0;font-size:15px;font-weight:700">Cactus</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">3 งาน · ค้าง 2</p>
+                <div style="height:8px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:33%;background:#f5c33b;border-radius:99px;animation:bar .8s both"></div></div>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px;transition:transform .16s,box-shadow .16s" style-hover="transform:translateY(-3px);box-shadow:0 16px 28px -22px rgba(42,38,34,.6)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#e9effe;display:grid;place-items:center;font-size:16px">🧪</span><h2 style="margin:0;font-size:15px;font-weight:700">Testing 1</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">2 งาน · ค้าง 1</p>
+                <div style="height:8px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:50%;background:#3f5fc9;border-radius:99px;animation:bar .8s .1s both"></div></div>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px;transition:transform .16s,box-shadow .16s" style-hover="transform:translateY(-3px);box-shadow:0 16px 28px -22px rgba(42,38,34,.6)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#e4f5ec;display:grid;place-items:center;font-size:16px">🌐</span><h2 style="margin:0;font-size:15px;font-weight:700">Web</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">2 งาน · เสร็จหมด</p>
+                <div style="height:8px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:100%;background:#1f7a56;border-radius:99px;animation:bar .8s .2s both"></div></div>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px;transition:transform .16s,box-shadow .16s" style-hover="transform:translateY(-3px);box-shadow:0 16px 28px -22px rgba(42,38,34,.6)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#f1ece1;display:grid;place-items:center;font-size:16px">🚀</span><h2 style="margin:0;font-size:15px;font-weight:700">StartUp</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">2 งาน · ค้าง 1</p>
+                <div style="height:8px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:50%;background:#3f5fc9;border-radius:99px;animation:bar .8s .3s both"></div></div>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#fdeceb;display:grid;place-items:center;font-size:16px">☕</span><h2 style="margin:0;font-size:15px;font-weight:700">Java</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:#b8433a;font-weight:600">1 งาน · เลยกำหนด</p>
+                <div style="height:8px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:8%;background:#c1443b;border-radius:99px"></div></div>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#f1ece1;display:grid;place-items:center;font-size:16px">🅰️</span><h2 style="margin:0;font-size:15px;font-weight:700">English</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">ยังไม่มีงาน</p>
+                <button type="button" style="min-height:38px;padding:0 12px;border:1px dashed rgba(42,38,34,.3);border-radius:11px;background:transparent;font:600 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:rgba(42,38,34,.8)">+ เพิ่มงานแรก</button>
+              </article></li>
+              <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span aria-hidden="true" style="width:36px;height:36px;border-radius:12px;background:#f1ece1;display:grid;place-items:center;font-size:16px">🐹</span><h2 style="margin:0;font-size:15px;font-weight:700">Golang</h2></div>
+                <p style="margin:0 0 10px;font-size:12px;color:rgba(42,38,34,.74)">ยังไม่มีงาน</p>
+                <button type="button" style="min-height:38px;padding:0 12px;border:1px dashed rgba(42,38,34,.3);border-radius:11px;background:transparent;font:600 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:rgba(42,38,34,.8)">+ เพิ่มงานแรก</button>
+              </article></li>
+              <li><button type="button" style="width:100%;height:100%;min-height:150px;border:2px dashed rgba(42,38,34,.22);border-radius:22px;background:transparent;cursor:pointer;font:700 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:rgba(42,38,34,.78);transition:background .16s,border-color .16s" style-hover="background:#f1ece1;border-color:rgba(42,38,34,.4)">+ เพิ่มวิชาใหม่</button></li>
+            </ul>
+
+            <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}">
+              <section aria-label="Admin: ผู้ใช้ทั้งหมด" style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:22px;padding:22px 24px">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+                  <h2 style="margin:0;font-size:15px;font-weight:700">Admin · ผู้ใช้ทั้งหมด</h2>
+                  <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#2a2622;color:#f5c33b">เห็นเฉพาะ isAdmin</span>
+                </div>
+                <p style="margin:0 0 14px;font-size:12px;color:rgba(42,38,34,.74)">4 users · จากตาราง users</p>
+                <table style="width:100%;border-collapse:collapse;font-size:13px">
+                  <thead><tr style="text-align:left;font-size:11px;color:rgba(42,38,34,.74);letter-spacing:.06em">
+                    <th scope="col" style="padding:0 8px 9px;font-weight:700">อีเมล</th><th scope="col" style="padding:0 8px 9px;font-weight:700">สิทธิ์</th><th scope="col" style="padding:0 8px 9px;font-weight:700">สมัครเมื่อ</th><th scope="col" style="padding:0 8px 9px;font-weight:700">เข้าล่าสุด</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr style="border-top:1px solid rgba(42,38,34,.08)"><td style="padding:12px 8px;font-weight:600;word-break:break-all">ruthaichanok.37355@gmail.com</td><td style="padding:12px 8px"><span style="white-space:nowrap;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">★ Admin</span></td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">1 เม.ย. 2026</td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">4 ส.ค. 2026</td></tr>
+                    <tr style="border-top:1px solid rgba(42,38,34,.08)"><td style="padding:12px 8px;font-weight:600;word-break:break-all">narudonponsueb1234@gmail.com</td><td style="padding:12px 8px"><span style="white-space:nowrap;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:#f1ece1;color:rgba(42,38,34,.8)">User</span></td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">1 เม.ย. 2026</td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">6 ส.ค. 2026</td></tr>
+                    <tr style="border-top:1px solid rgba(42,38,34,.08)"><td style="padding:12px 8px;font-weight:600;word-break:break-all">pimchanok@school.ac.th</td><td style="padding:12px 8px"><span style="white-space:nowrap;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:#f1ece1;color:rgba(42,38,34,.8)">User</span></td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">3 ก.ค. 2026</td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">3 ก.ค. 2026</td></tr>
+                    <tr style="border-top:1px solid rgba(42,38,34,.08)"><td style="padding:12px 8px;font-weight:600;word-break:break-all">ammmook04@gmail.com</td><td style="padding:12px 8px"><span style="white-space:nowrap;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:#f1ece1;color:rgba(42,38,34,.8)">User</span></td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">3 ก.ค. 2026</td><td style="padding:12px 8px;color:rgba(42,38,34,.75)">3 ก.ค. 2026</td></tr>
+                  </tbody>
+                </table>
+              </section>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2d Login -->
+    <div class="dv-opt" id="2d">
+      <div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Login · เหลือประโยคเดียว + ปุ่ม Google · 960×580</div>
+      <div class="dv-card" style="width:960px">
+        <div style="height:580px;display:grid;place-items:center;background:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;position:relative;overflow:hidden">
+          <div aria-hidden="true" style="position:absolute;width:520px;height:520px;border-radius:50%;background:rgba(245,195,59,.14);top:-190px;right:-120px"></div>
+          <div aria-hidden="true" style="position:absolute;width:340px;height:340px;border-radius:50%;background:rgba(63,95,201,.22);bottom:-160px;left:-90px"></div>
+          <main style="position:relative;width:400px;background:#fbf7f0;border-radius:28px;padding:40px 36px;text-align:center;box-shadow:0 40px 70px -40px #000;animation:rise .5s both;color:#2a2622">
+            <span aria-hidden="true" style="width:52px;height:52px;border-radius:18px;background:#f5c33b;display:grid;place-items:center;font-weight:800;font-size:22px;margin:0 auto 18px">T</span>
+            <h1 style="margin:0;font-size:29px;font-weight:800;letter-spacing:-.9px">Todolist</h1>
+            <p style="margin:10px 0 26px;font-size:14.5px;color:rgba(42,38,34,.78);text-wrap:pretty">มาลองจัดสรรเวลาเรียนของเรากันเถอะ</p>
+            <form>
+              <button type="submit" style="width:100%;display:flex;align-items:center;justify-content:center;gap:11px;min-height:54px;border:1px solid rgba(42,38,34,.14);border-radius:16px;background:#fff;font:700 14.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;box-shadow:0 4px 0 rgba(42,38,34,.12);transition:transform .13s,box-shadow .13s" style-hover="transform:translateY(-2px);box-shadow:0 6px 0 rgba(42,38,34,.14)" style-active="transform:translateY(2px);box-shadow:0 1px 0 rgba(42,38,34,.14)">
+                <span aria-hidden="true" style="width:22px;height:22px;border-radius:99px;background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);display:grid;place-items:center"><span style="width:9px;height:9px;border-radius:99px;background:#fff"></span></span>
+                Sign in with Google
+              </button>
+            </form>
+            
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2e Mobile -->
+    <div class="dv-opt" id="2e">
+      <div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>Mobile 390px · Dashboard / งานทั้งหมด / รายละเอียด (sheet) / วิชาเรียน+Admin / Login</div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <header style="background:#2a2622;color:#fbf7f0;padding:16px 18px 22px;border-radius:0 0 24px 24px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px">
+                <span style="display:flex;align-items:center;gap:8px"><span aria-hidden="true" style="width:30px;height:30px;border-radius:10px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:800;font-size:13px">T</span><strong style="font-size:14px">Todolist</strong></span>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <button type="button" style="min-height:38px;padding:0 11px;border:1px solid rgba(251,247,240,.28);border-radius:11px;background:transparent;color:#fbf7f0;font:600 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">2569 · เทอม 1 ▾</button>
+                  <span style="width:32px;height:32px;border-radius:99px;background:#f5c33b;color:#2a2622;display:grid;place-items:center;font-weight:700;font-size:12.5px">N</span>
+                </div>
+              </div>
+              <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:.14em;color:#f5c33b">งานที่ใกล้ที่สุด</p>
+              <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.8px;line-height:1.15">Lab 1 · Cactus</h1>
+              <p style="margin:7px 0 0;font-size:12.5px;color:rgba(251,247,240,.82)">Homework · ส่ง 23 ก.ค. · อีก 3 วัน</p>
+              <div style="display:flex;gap:8px;margin-top:14px">
+                <div style="flex:1;padding:12px 8px;border-radius:16px;background:rgba(251,247,240,.1);text-align:center"><div style="font-size:24px;font-weight:800;line-height:1;color:#f5c33b">3</div><div style="font-size:10px;font-weight:700;color:rgba(251,247,240,.8);margin-top:4px">วันที่เหลือ</div></div>
+                <div style="flex:1;padding:12px 8px;border-radius:16px;background:rgba(193,68,59,.28);text-align:center"><div style="font-size:24px;font-weight:800;line-height:1;color:#ffc0ba">1</div><div style="font-size:10px;font-weight:700;color:#ffc0ba;margin-top:4px">เลยกำหนด</div></div>
+                <div style="flex:1;padding:12px 8px;border-radius:16px;background:rgba(251,247,240,.1);text-align:center"><div style="font-size:24px;font-weight:800;line-height:1">6</div><div style="font-size:10px;font-weight:700;color:rgba(251,247,240,.8);margin-top:4px">งานที่เหลือ</div></div>
+              </div>
+              <button type="button" style="width:100%;margin-top:14px;min-height:48px;border:0;border-radius:14px;background:#f5c33b;color:#2a2622;font:700 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;transition:transform .13s" style-active="transform:translateY(2px)">Start Working</button>
+            </header>
+
+            <main style="padding:16px 18px 20px;display:flex;flex-direction:column;gap:14px">
+              <article style="background:#fff;border:1px solid rgba(42,38,34,.08);border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center">
+                <div style="position:relative;width:112px;height:112px;flex:none">
+                  <svg viewBox="0 0 200 200" width="112" height="112" role="img" aria-label="ยังไม่ทำ 4, กำลังทำ 2, เสร็จแล้ว 3 จาก 9 งาน">
+                    <circle cx="100" cy="100" r="76" fill="none" stroke="#f1ece1" stroke-width="30"></circle>
+                    <g transform="rotate(-90 100 100)" stroke-width="30" fill="none" stroke-linecap="round">
+                      <circle cx="100" cy="100" r="76" stroke="#f5c33b" stroke-dasharray="206 478" stroke-dashoffset="0" style="animation:d1 .9s both ease-out"></circle>
+                      <circle cx="100" cy="100" r="76" stroke="#3f5fc9" stroke-dasharray="100 478" stroke-dashoffset="-212" style="animation:d2 .9s .25s both ease-out"></circle>
+                      <circle cx="100" cy="100" r="76" stroke="#1f7a56" stroke-dasharray="153 478" stroke-dashoffset="-318" style="animation:d3 .9s .45s both ease-out"></circle>
+                    </g>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:grid;place-content:center;text-align:center"><div style="font-size:24px;font-weight:800;line-height:1">{{ total }}</div><div style="font-size:9.5px;font-weight:700;color:rgba(42,38,34,.72)">TOTAL</div></div>
+                </div>
+                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;flex:1;min-width:0">
+                  <li style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:12px;background:#fef6e0"><span aria-hidden="true" style="font-size:12px">🕒</span><span style="flex:1;font-size:12px;font-weight:600">ยังไม่ทำ</span><strong style="font-size:15px">4</strong></li>
+                  <li style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:12px;background:#e9effe"><span aria-hidden="true" style="font-size:12px">⚡</span><span style="flex:1;font-size:12px;font-weight:600">Working</span><strong style="font-size:15px">2</strong></li>
+                  <li style="display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:12px;background:#e4f5ec"><span aria-hidden="true" style="width:18px;height:18px;border-radius:6px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700">✓</span><span style="flex:1;font-size:12px;font-weight:600">Done</span><strong style="font-size:15px">3</strong></li>
+                </ul>
+              </article>
+
+              <section aria-label="ไทม์ไลน์กำหนดส่ง">
+                <h2 style="margin:0 0 10px;font-size:14px;font-weight:700">ใกล้ถึงกำหนด</h2>
+                <ol style="list-style:none;margin:0;padding:0 0 0 20px;border-left:2px dashed rgba(42,38,34,.16);display:flex;flex-direction:column;gap:10px">
+                  <li style="position:relative">
+                    <span aria-hidden="true" style="position:absolute;left:-28px;top:14px;width:13px;height:13px;border-radius:50%;background:#c1443b;border:3px solid #fbf7f0;box-shadow:0 0 0 2px #c1443b"></span>
+                    <article style="padding:13px;border-radius:15px;background:#fdeceb;border:1px solid rgba(193,68,59,.3)">
+                      <h3 style="margin:0;font-size:13.5px;font-weight:700;overflow-wrap:anywhere">หพเพเกพเกพเ</h3>
+                      <p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Java · Homework</p>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#c1443b;color:#fff">เลยกำหนด 12 วัน</span><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span></div>
+                    </article>
+                  </li>
+                  <li style="position:relative">
+                    <span aria-hidden="true" style="position:absolute;left:-28px;top:14px;width:13px;height:13px;border-radius:50%;background:#3f5fc9;border:3px solid #fbf7f0;box-shadow:0 0 0 2px #3f5fc9"></span>
+                    <article style="padding:13px;border-radius:15px;background:#fff;border:1px solid rgba(42,38,34,.09)">
+                      <h3 style="margin:0;font-size:13.5px;font-weight:700">Lab 1</h3>
+                      <p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Cactus · 23 ก.ค. · อีก 3 วัน</p>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span><sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></sc-if></div>
+                    </article>
+                  </li>
+                  <li style="position:relative">
+                    <span aria-hidden="true" style="position:absolute;left:-28px;top:14px;width:13px;height:13px;border-radius:50%;background:#f5c33b;border:3px solid #fbf7f0;box-shadow:0 0 0 2px #f5c33b"></span>
+                    <article style="padding:13px;border-radius:15px;background:#fff;border:1px solid rgba(42,38,34,.09)">
+                      <h3 style="margin:0;font-size:13.5px;font-weight:700">Lab2</h3>
+                      <p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Testing 1 · Exam · อีก 7 วัน</p>
+                      <div style="display:flex;gap:6px"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span></div>
+                    </article>
+                  </li>
+                </ol>
+              </section>
+            </main>
+
+            <nav aria-label="เมนู" style="margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <header style="padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;background:#fbf7f0;position:sticky;top:0">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <h1 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.4px">งานทั้งหมด <span style="font-size:12.5px;font-weight:600;color:rgba(42,38,34,.74)">9</span></h1>
+                <button type="button" style="min-height:38px;padding:0 11px;border:1px solid rgba(42,38,34,.16);border-radius:11px;background:#fff;font:600 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap">2569 · เทอม 1 ▾</button>
+              </div>
+              <label style="display:flex;align-items:center;gap:9px;height:46px;padding:0 14px;background:#fff;border:1px solid rgba(42,38,34,.12);border-radius:14px"><span aria-hidden="true" style="opacity:.6">🔍</span><input type="search" placeholder="ค้นหางาน หรือวิชา…" aria-label="ค้นหางาน" style="flex:1;min-width:0;border:0;outline:none;background:transparent;font:500 13.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622"></label>
+              <div role="tablist" aria-label="กรองตามสถานะ" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:2px">
+                <button type="button" role="tab" aria-selected="true" style="flex:none;min-height:38px;padding:0 13px;border:0;border-radius:99px;background:#2a2622;color:#fff;font:700 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">ทั้งหมด 9</button>
+                <button type="button" role="tab" aria-selected="false" style="flex:none;min-height:38px;padding:0 13px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap">🕒 ยังไม่ทำ 4</button>
+                <button type="button" role="tab" aria-selected="false" style="flex:none;min-height:38px;padding:0 13px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap">⚡ 2</button>
+                <button type="button" role="tab" aria-selected="false" style="flex:none;min-height:38px;padding:0 13px;border:1px solid rgba(42,38,34,.14);border-radius:99px;background:#fff;font:600 12px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;white-space:nowrap">✓ 3</button>
+              </div>
+            </header>
+            <main style="padding:4px 18px 18px">
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px">
+                <li><article style="padding:14px;background:#fff;border:1px solid rgba(193,68,59,.3);border-left:5px solid #c1443b;border-radius:16px;display:flex;gap:11px;align-items:flex-start">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: หพเพเกพเกพเ" style="width:44px;height:44px;flex:none;border-radius:13px;border:2px solid rgba(42,38,34,.25);background:#fff;cursor:pointer"></button>
+                  <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:14.5px;font-weight:700;overflow-wrap:anywhere">หพเพเกพเกพเ</h2><p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Java · Homework</p><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#c1443b;color:#fff">เลยกำหนด 12 วัน</span><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span></div></div>
+                </article></li>
+                <li><article style="padding:14px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #3f5fc9;border-radius:16px;display:flex;gap:11px;align-items:flex-start;box-shadow:0 12px 24px -22px rgba(42,38,34,.8)">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: Lab 1" style="width:44px;height:44px;flex:none;border-radius:13px;border:2px solid rgba(42,38,34,.25);background:#fff;cursor:pointer"></button>
+                  <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:14.5px;font-weight:700">Lab 1</h2><p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Cactus · Homework · อีก 3 วัน</p><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span><sc-if value="{{ showPriority }}" hint-placeholder-val="{{ true }}"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></sc-if></div></div>
+                </article></li>
+                <li><article style="padding:14px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b;border-radius:16px;display:flex;gap:11px;align-items:flex-start">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: Lab2" style="width:44px;height:44px;flex:none;border-radius:13px;border:2px solid rgba(42,38,34,.25);background:#fff;cursor:pointer"></button>
+                  <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:14.5px;font-weight:700">Lab2</h2><p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Testing 1 · Exam · อีก 7 วัน</p><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span></div></div>
+                </article></li>
+                <li><article style="padding:14px;background:#fff;border:1px solid rgba(42,38,34,.1);border-left:5px solid #f5c33b;border-radius:16px;display:flex;gap:11px;align-items:flex-start">
+                  <button type="button" aria-label="ทำเครื่องหมายว่าเสร็จ: แยกประเภศประบองเพรช" style="width:44px;height:44px;flex:none;border-radius:13px;border:2px solid rgba(42,38,34,.25);background:#fff;cursor:pointer"></button>
+                  <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:14.5px;font-weight:700;overflow-wrap:anywhere">แยกประเภศประบองเพรช</h2><p style="margin:4px 0 8px;font-size:11.5px;color:rgba(42,38,34,.74)">Cactus · Assignment · อีก 17 วัน</p><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">🕒 Not Started</span></div></div>
+                </article></li>
+                <li><article style="padding:14px;background:#fdfbf6;border:1px solid rgba(42,38,34,.08);border-left:5px solid #1f7a56;border-radius:16px;display:flex;gap:11px;align-items:center;opacity:.85">
+                  <span aria-hidden="true" style="width:44px;height:44px;flex:none;border-radius:13px;background:#1f7a56;color:#fff;display:grid;place-items:center;font-size:18px;font-weight:700">✓</span>
+                  <div style="min-width:0;flex:1"><h2 style="margin:0;font-size:14.5px;font-weight:700;text-decoration:line-through;text-decoration-color:rgba(42,38,34,.35)">Lab Reuse Components</h2><p style="margin:4px 0 0;font-size:11.5px;color:rgba(42,38,34,.72)">Web · Done</p></div>
+                </article></li>
+              </ul>
+            </main>
+            <button type="button" aria-label="เพิ่มงานใหม่" style="align-self:flex-end;margin:auto 18px 14px 0;width:60px;height:60px;border-radius:50%;border:0;background:#2a2622;color:#f5c33b;font-size:26px;font-weight:700;cursor:pointer;box-shadow:0 12px 24px -12px rgba(42,38,34,.85)">+</button>
+            <nav aria-label="เมนู" style="margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)"><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a></nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;background:rgba(42,38,34,.45);font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;display:flex;flex-direction:column;justify-content:flex-end">
+            <section aria-label="รายละเอียดงาน" style="background:#fbf7f0;color:#2a2622;border-radius:26px 26px 0 0;padding:16px 18px 24px;display:flex;flex-direction:column;gap:14px;animation:rise .3s both">
+              <div aria-hidden="true" style="width:44px;height:5px;border-radius:99px;background:rgba(42,38,34,.22);margin:0 auto"></div>
+              <div>
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#e9effe;color:#2f4fb8">⚡ In Progress</span>
+                <h2 style="margin:10px 0 0;font-size:22px;font-weight:800;letter-spacing:-.4px">Lab 1</h2>
+                <p style="margin:5px 0 0;font-size:12.5px;color:rgba(42,38,34,.74)">Cactus · Homework</p>
+              </div>
+              <div style="padding:14px;border-radius:16px;background:#fef6e0;display:flex;gap:12px;align-items:center">
+                <div style="font-size:26px;font-weight:800;line-height:1">3</div>
+                <div style="font-size:12px;font-weight:600;line-height:1.4">วันก่อนถึงกำหนด<br><span style="font-weight:500;color:rgba(42,38,34,.74)">ส่ง 23 ก.ค. 2026</span></div>
+              </div>
+              <dl style="margin:0;display:grid;grid-template-columns:84px 1fr;gap:10px;font-size:12.5px">
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">Priority</dt><dd style="margin:0"><span style="font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fdeceb;color:#b8433a">▲ High</span></dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">เทอม</dt><dd style="margin:0;font-weight:600">1 / 2569</dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">สร้างเมื่อ</dt><dd style="margin:0;font-weight:600">19 ก.ค. 2026 · 11:45</dd>
+                <dt style="color:rgba(42,38,34,.72);font-weight:600">เจ้าของ</dt><dd style="margin:0;font-weight:600;word-break:break-all">narudonponsueb1234@gmail.com</dd>
+              </dl>
+              <div>
+                <label for="mnote" style="display:block;font-size:12px;font-weight:700;color:rgba(42,38,34,.72);margin-bottom:6px">โน้ต</label>
+                <textarea id="mnote" rows="2" style="width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:1px solid rgba(42,38,34,.14);background:#fff;font:500 13px/1.5 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;resize:none">draw cactus and write detail of cactus</textarea>
+              </div>
+              <fieldset style="margin:0;padding:0;border:0">
+                <legend style="font-size:12px;font-weight:700;color:rgba(42,38,34,.72);margin-bottom:7px">เปลี่ยนสถานะ</legend>
+                <div style="display:flex;gap:7px">
+                  <button type="button" style="flex:1;min-height:46px;border:1px solid rgba(42,38,34,.14);border-radius:13px;background:#fff;font:600 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer">🕒 ยังไม่ทำ</button>
+                  <button type="button" style="flex:1;min-height:46px;border:2px solid #3f5fc9;border-radius:13px;background:#e9effe;font:700 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2f4fb8;cursor:pointer">⚡ Working</button>
+                  <button type="button" style="flex:1;min-height:46px;border:0;border-radius:13px;background:#1f7a56;color:#fff;font:700 11.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">Done!</button>
+                </div>
+              </fieldset>
+              <div style="display:flex;gap:9px">
+                <button type="button" style="flex:1;min-height:50px;border:0;border-radius:15px;background:#2a2622;color:#fff;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">บันทึก</button>
+                <button type="button" style="min-height:50px;padding:0 16px;border:1px solid rgba(193,68,59,.4);border-radius:15px;background:#fff;color:#b8433a;font:600 13px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer">ลบ</button>
+              </div>
+            </section>
+            <nav aria-label="เมนู" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)"><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a><a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a></nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;display:flex;flex-direction:column;background:#fbf7f0;color:#2a2622;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <header style="padding:16px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div><h1 style="margin:0;font-size:21px;font-weight:800;letter-spacing:-.4px">วิชาเรียน</h1><p style="margin:4px 0 0;font-size:12px;color:rgba(42,38,34,.74)">9 วิชา · เทอม 1 / 2569</p></div>
+              <button type="button" style="min-height:44px;padding:0 14px;border:0;border-radius:13px;background:#2a2622;color:#fff;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;white-space:nowrap">+ Subject</button>
+            </header>
+            <main style="padding:6px 18px 18px;display:flex;flex-direction:column;gap:14px">
+              <div role="tablist" aria-label="สลับหน้า" style="display:flex;gap:4px;background:#f1ece1;padding:4px;border-radius:13px">
+                <button type="button" role="tab" aria-selected="true" style="flex:1;min-height:40px;border:0;border-radius:10px;background:#fff;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:#2a2622">วิชาของฉัน</button>
+                <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}"><button type="button" role="tab" aria-selected="false" style="flex:1;min-height:40px;border:0;border-radius:10px;background:transparent;font:600 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;cursor:pointer;color:rgba(42,38,34,.74)">Admin</button></sc-if>
+              </div>
+              <ul style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:18px;padding:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#fef6e0;display:grid;place-items:center;font-size:15px">🌵</span><h2 style="margin:0;font-size:13.5px;font-weight:700">Cactus</h2></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;color:rgba(42,38,34,.74)">3 งาน · ค้าง 2</p>
+                  <div style="height:7px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:33%;background:#f5c33b;border-radius:99px"></div></div>
+                </article></li>
+                <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:18px;padding:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#e9effe;display:grid;place-items:center;font-size:15px">🧪</span><h2 style="margin:0;font-size:13.5px;font-weight:700">Testing 1</h2></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;color:rgba(42,38,34,.74)">2 งาน · ค้าง 1</p>
+                  <div style="height:7px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:50%;background:#3f5fc9;border-radius:99px"></div></div>
+                </article></li>
+                <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:18px;padding:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#e4f5ec;display:grid;place-items:center;font-size:15px">🌐</span><h2 style="margin:0;font-size:13.5px;font-weight:700">Web</h2></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;color:rgba(42,38,34,.74)">2 งาน · เสร็จหมด</p>
+                  <div style="height:7px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:100%;background:#1f7a56;border-radius:99px"></div></div>
+                </article></li>
+                <li><article style="background:#fff;border:1px solid rgba(193,68,59,.28);border-radius:18px;padding:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#fdeceb;display:grid;place-items:center;font-size:15px">☕</span><h2 style="margin:0;font-size:13.5px;font-weight:700">Java</h2></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;color:#b8433a;font-weight:600">1 งาน · เลยกำหนด</p>
+                  <div style="height:7px;border-radius:99px;background:#f1ece1;overflow:hidden"><div style="height:100%;width:8%;background:#c1443b;border-radius:99px"></div></div>
+                </article></li>
+                <li><article style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:18px;padding:14px">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span aria-hidden="true" style="width:32px;height:32px;border-radius:11px;background:#f1ece1;display:grid;place-items:center;font-size:15px">🅰️</span><h2 style="margin:0;font-size:13.5px;font-weight:700">English</h2></div>
+                  <p style="margin:0 0 9px;font-size:11.5px;color:rgba(42,38,34,.74)">ยังไม่มีงาน</p>
+                  <button type="button" style="min-height:36px;padding:0 10px;border:1px dashed rgba(42,38,34,.3);border-radius:10px;background:transparent;font:600 11px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:rgba(42,38,34,.8);cursor:pointer">+ เพิ่มงาน</button>
+                </article></li>
+                <li><button type="button" style="width:100%;height:100%;min-height:120px;border:2px dashed rgba(42,38,34,.22);border-radius:18px;background:transparent;cursor:pointer;font:700 12.5px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:rgba(42,38,34,.78)">+ เพิ่มวิชาใหม่</button></li>
+              </ul>
+
+              <sc-if value="{{ showAdmin }}" hint-placeholder-val="{{ true }}">
+                <section aria-label="Admin: ผู้ใช้ทั้งหมด">
+                  <div style="display:flex;align-items:center;gap:8px;margin:0 0 10px">
+                    <h2 style="margin:0;font-size:14px;font-weight:700">Admin · Users</h2>
+                    <span style="font-size:10px;font-weight:700;padding:4px 8px;border-radius:99px;background:#2a2622;color:#f5c33b;white-space:nowrap">isAdmin</span>
+                  </div>
+                  <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px">
+                    <li style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:16px;padding:13px;display:flex;gap:10px;align-items:center">
+                      <span aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:50%;background:#fef6e0;display:grid;place-items:center;font-size:14px;font-weight:700">R</span>
+                      <div style="min-width:0;flex:1"><div style="font-size:12.5px;font-weight:700;word-break:break-all">ruthaichanok.37355@gmail.com</div><div style="font-size:11px;color:rgba(42,38,34,.74)">เข้าล่าสุด 4 ส.ค. 2026</div></div>
+                      <span style="flex:none;white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#fef6e0;color:#7d5806">★ Admin</span>
+                    </li>
+                    <li style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:16px;padding:13px;display:flex;gap:10px;align-items:center">
+                      <span aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:50%;background:#e9effe;display:grid;place-items:center;font-size:14px;font-weight:700">N</span>
+                      <div style="min-width:0;flex:1"><div style="font-size:12.5px;font-weight:700;word-break:break-all">narudonponsueb1234@gmail.com</div><div style="font-size:11px;color:rgba(42,38,34,.74)">เข้าล่าสุด 6 ส.ค. 2026</div></div>
+                      <span style="flex:none;white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#f1ece1;color:rgba(42,38,34,.8)">User</span>
+                    </li>
+                    <li style="background:#fff;border:1px solid rgba(42,38,34,.09);border-radius:16px;padding:13px;display:flex;gap:10px;align-items:center">
+                      <span aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:50%;background:#e4f5ec;display:grid;place-items:center;font-size:14px;font-weight:700">P</span>
+                      <div style="min-width:0;flex:1"><div style="font-size:12.5px;font-weight:700;word-break:break-all">pimchanok@school.ac.th</div><div style="font-size:11px;color:rgba(42,38,34,.74)">เข้าล่าสุด 3 ก.ค. 2026</div></div>
+                      <span style="flex:none;white-space:nowrap;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:#f1ece1;color:rgba(42,38,34,.8)">User</span>
+                    </li>
+                  </ul>
+                </section>
+              </sc-if>
+            </main>
+            <nav aria-label="เมนู" style="margin-top:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:10px 12px 14px;background:#fff;border-top:1px solid rgba(42,38,34,.09)">
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📊</span>Dashboard</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:rgba(42,38,34,.78);font-size:10.5px;font-weight:600"><span aria-hidden="true" style="font-size:17px">📋</span>งานทั้งหมด</a>
+              <a href="#2e" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;border-radius:14px;text-decoration:none;color:#2a2622;font-size:10.5px;font-weight:700;background:#fef6e0"><span aria-hidden="true" style="font-size:17px">📚</span>วิชาเรียน</a>
+            </nav>
+          </div>
+        </div>
+
+        <div class="dv-card" style="width:390px;border-radius:30px">
+          <div style="width:390px;min-height:812px;height:100%;box-sizing:border-box;background:#2a2622;position:relative;overflow:hidden;display:grid;place-items:center;padding:20px;box-sizing:border-box;font-family:'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif">
+            <div aria-hidden="true" style="position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(245,195,59,.14);top:-160px;right:-140px"></div>
+            <div aria-hidden="true" style="position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(63,95,201,.22);bottom:-120px;left:-100px"></div>
+            <main style="position:relative;width:100%;background:#fbf7f0;border-radius:26px;padding:34px 24px;text-align:center;box-shadow:0 34px 60px -34px #000;animation:rise .5s both;color:#2a2622;box-sizing:border-box">
+              <span aria-hidden="true" style="width:50px;height:50px;border-radius:17px;background:#f5c33b;display:grid;place-items:center;font-weight:800;font-size:21px;margin:0 auto 16px">T</span>
+              <h1 style="margin:0;font-size:26px;font-weight:800;letter-spacing:-.8px">Todolist</h1>
+              <p style="margin:9px 0 24px;font-size:13.5px;color:rgba(42,38,34,.78);text-wrap:pretty">มาลองจัดสรรเวลาเรียนของเรากันเถอะ</p>
+              <form>
+                <button type="submit" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;min-height:54px;border:1px solid rgba(42,38,34,.14);border-radius:16px;background:#fff;font:700 14px 'Plus Jakarta Sans','IBM Plex Sans Thai',sans-serif;color:#2a2622;cursor:pointer;box-shadow:0 4px 0 rgba(42,38,34,.12);transition:transform .13s,box-shadow .13s" style-active="transform:translateY(2px);box-shadow:0 1px 0 rgba(42,38,34,.14)">
+                  <span aria-hidden="true" style="width:22px;height:22px;border-radius:50%;background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);display:grid;place-items:center"><span style="width:9px;height:9px;border-radius:50%;background:#fff"></span></span>
+                  Sign in with Google
+                </button>
+              </form>
+            </main>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Try next: “ทำ tablet 768 ของชุดนี้” · “hero ของ <a class="dv-oid" href="#2a">2a</a> ขอเตี้ยลง” · “ขอ empty / loading / success state ในธีมนี้”</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showPriority&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showAdmin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+class Component extends DCLogic {
+  state = { total: 0 };
+  componentDidMount() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return this.setState({ total: 9 });
+    const t0 = performance.now();
+    const tick = (t) => {
+      const p = Math.min(1, (t - t0) / 900);
+      this.setState({ total: Math.round(9 * (1 - Math.pow(1 - p, 3))) });
+      if (p < 1) this._raf = requestAnimationFrame(tick);
+    };
+    this._raf = requestAnimationFrame(tick);
+  }
+  componentWillUnmount() { cancelAnimationFrame(this._raf); }
+  renderVals() {
+    return {
+      total: this.state.total,
+      total6: Math.round(this.state.total * 6 / 9),
+      showPriority: this.props.showPriority ?? true,
+      showAdmin: this.props.showAdmin ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>
