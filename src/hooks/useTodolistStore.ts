@@ -186,7 +186,7 @@ export function useTodolistStore({
         id: newId(),
         title: draft.title.trim(),
         subjectId: draft.subjectId,
-        type: draft.type === '' ? 'homework' : draft.type,
+        type: draft.type === '' ? 'other' : draft.type,
         status: 'notStarted',
         dueDate: draft.dueDate,
         note: draft.note.trim(),

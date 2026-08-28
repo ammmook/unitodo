@@ -40,7 +40,7 @@ var GOOGLE_CLIENT_ID = 'PASTE_YOUR_GOOGLE_OAUTH_CLIENT_ID_HERE.apps.googleuserco
 var BOOTSTRAP_ADMIN_EMAILS = [];
 
 /** ขยับเลขนี้ทุกครั้งที่แก้ไฟล์ — เอาไว้เช็คว่า deploy เวอร์ชันใหม่แล้วจริงผ่าน action 'ping' */
-var BACKEND_VERSION = 5;
+var BACKEND_VERSION = 6;
 
 /** อายุ session ที่ backend ออกให้ — ภายในช่วงนี้เปิดเว็บ/แท็บใหม่ไม่ต้องล็อกอินซ้ำ */
 var SESSION_TTL_DAYS = 30;
@@ -65,7 +65,7 @@ var S = { ID: 0, OWNER_EMAIL: 1, NAME: 2, EMOJI: 3, ACADEMIC_YEAR: 4, SEMESTER: 
 var W = { ID: 0, OWNER_EMAIL: 1, SUBJECT_ID: 2, TITLE: 3, TYPE: 4, STATUS: 5, PRIORITY: 6, DUE_DATE: 7, NOTE: 8, CREATED_AT: 9 };
 
 var VALID_STATUS = { notStarted: 1, inProgress: 1, completed: 1 };
-var VALID_TYPE = { homework: 1, assignment: 1, exam: 1, presentation: 1 };
+var VALID_TYPE = { assignment: 1, exam: 1, presentation: 1, project: 1, other: 1 };
 
 // ── Router ────────────────────────────────────────────────────────
 
@@ -722,7 +722,7 @@ function readWorks(ownerEmail) {
       id: String(rows[i][W.ID]),
       title: String(rows[i][W.TITLE] || ''),
       subjectId: String(rows[i][W.SUBJECT_ID] || ''),
-      type: pick(rows[i][W.TYPE], VALID_TYPE, 'homework'),
+      type: pick(rows[i][W.TYPE], VALID_TYPE, 'other'),
       status: pick(rows[i][W.STATUS], VALID_STATUS, 'notStarted'),
       dueDate: asDateString(rows[i][W.DUE_DATE]),
       note: String(rows[i][W.NOTE] || ''),
@@ -809,7 +809,7 @@ function addWork(params, ownerEmail) {
     id: String(params.id || Utilities.getUuid()),
     title: title,
     subjectId: subjectId,
-    type: pick(params.type, VALID_TYPE, 'homework'),
+    type: pick(params.type, VALID_TYPE, 'other'),
     status: pick(params.status, VALID_STATUS, 'notStarted'),
     dueDate: asDateString(params.dueDate),
     note: String(params.note || '').trim(),

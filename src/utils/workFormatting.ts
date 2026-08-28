@@ -30,28 +30,55 @@ function startOfToday(): number {
   return today.getTime()
 }
 
+/** แสดงแทนวันที่ที่ยังไม่มีหรืออ่านไม่ออก ดีกว่าปล่อยให้ขึ้น NaN */
+const NO_DATE = '—'
+
+/**
+ * รับได้ทั้ง 'YYYY-MM-DD' และ ISO datetime เต็ม ('2026-08-28T10:23:45.000Z')
+ *
+ * กำหนดส่งของงานเป็นวันที่ล้วน ส่วนวันสมัคร/เข้าล่าสุดจาก backend เป็น datetime
+ * ทั้งสองแบบจึงต้องอ่านได้ · แบบวันที่ล้วนตีความเป็นเที่ยงคืนตามเวลาเครื่อง
+ * ไม่ใช่ UTC ไม่งั้นจะเลื่อนไปหนึ่งวันในโซนเวลาไทย
+ */
+function parseIsoDate(value: string): Date | null {
+  if (!value) return null
+
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  const date = new Date(isDateOnly ? `${value}T00:00:00` : value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 /** จำนวนวันจากวันนี้ถึงกำหนดส่ง — ติดลบคือเลยกำหนด */
 export function daysUntilDue(isoDate: string): number {
-  const due = new Date(`${isoDate}T00:00:00`).getTime()
-  return Math.round((due - startOfToday()) / MILLISECONDS_PER_DAY)
+  const due = parseIsoDate(isoDate)
+  if (!due) return 0
+
+  due.setHours(0, 0, 0, 0)
+  return Math.round((due.getTime() - startOfToday()) / MILLISECONDS_PER_DAY)
 }
 
 /** เช่น "23 ก.ค. 2026" */
 export function formatDueDate(isoDate: string, withYear = true): string {
-  const date = new Date(`${isoDate}T00:00:00`)
+  const date = parseIsoDate(isoDate)
+  if (!date) return NO_DATE
+
   const dayAndMonth = `${date.getDate()} ${THAI_SHORT_MONTHS[date.getMonth()]}`
   return withYear ? `${dayAndMonth} ${date.getFullYear()}` : dayAndMonth
 }
 
 /** เช่น "19 ก.ค. 2026 · 11:45" */
 export function formatCreatedAt(isoDateTime: string): string {
-  const date = new Date(isoDateTime)
+  const date = parseIsoDate(isoDateTime)
+  if (!date) return NO_DATE
+
   const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
   return `${formatDueDate(toLocalIsoDate(date))} · ${time}`
 }
 
 /** เช่น "อีก 3 วัน" / "วันนี้" / "เลยกำหนด 12 วัน" */
 export function describeDueDistance(isoDate: string): string {
+  if (!parseIsoDate(isoDate)) return NO_DATE
+
   const days = daysUntilDue(isoDate)
   if (days < 0) return `เลยกำหนด ${Math.abs(days)} วัน`
   if (days === 0) return 'ครบกำหนดวันนี้'
