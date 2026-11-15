@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "api": "node --env-file-if-exists=.env --env-file-if-exists=.env.local server/index.ts"
+    "api": "node --env-file-if-exists=.env --env-file-if-exists=.env.local server/local.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.8",

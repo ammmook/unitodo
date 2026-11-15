@@ -1,5 +1,4 @@
 import { randomUUID, randomBytes } from 'node:crypto'
-import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 import { createRealtime, rawSql } from '@neon/realtime/server'
@@ -18,7 +17,6 @@ const BOOTSTRAP_ADMIN_EMAILS = (process.env.BOOTSTRAP_ADMIN_EMAILS ?? '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
   .filter(Boolean)
-const PORT = Number(process.env.PORT ?? 8787)
 const SESSION_TTL_MS = 30 * 86400000
 const SESSION_TOUCH_AFTER_MS = 12 * 3600000
 const TIME_ZONE = 'Asia/Bangkok'
@@ -384,7 +382,7 @@ async function handle(params: Params): Promise<unknown> {
   }
 }
 
-const app = new Hono()
+export const app = new Hono()
 
 app.post('/api', async (c) => {
   let params: Params
@@ -403,7 +401,7 @@ app.post('/api', async (c) => {
 })
 
 /** งานประจำวัน: คำนวณ priority ใหม่ + ลบ session ที่หมดอายุ */
-async function dailyMaintenance() {
+export async function dailyMaintenance() {
   const works = await pool.query<{ id: string; status: string; due_date: string; priority: string }>(
     "SELECT id, status, due_date, priority FROM works WHERE status <> 'completed' OR priority <> ''",
   )
@@ -414,8 +412,5 @@ async function dailyMaintenance() {
   await pool.query('DELETE FROM sessions WHERE expires_at <= now()')
 }
 
-await migrate()
-await dailyMaintenance()
-setInterval(() => dailyMaintenance().catch(console.error), 86400000).unref()
-
-serve({ fetch: app.fetch, port: PORT }, (info) => console.log(`API ready on http://localhost:${info.port}/api`))
+/** สร้างตารางครั้งเดียวต่อ process (Vercel เรียกใช้ตอน cold start) */
+export const ready = migrate()
