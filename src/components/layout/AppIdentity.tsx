@@ -8,7 +8,7 @@ export function BrandMark({ size = 'md' }: { size?: 'sm' | 'md' }) {
     <span className="flex items-center gap-2.5">
       <span
         aria-hidden="true"
-        className={`grid ${badgeSize} place-items-center rounded-xl bg-highlight font-extrabold text-ink`}
+        className={`hover:animate-wiggle grid ${badgeSize} place-items-center rounded-xl bg-highlight font-extrabold text-ink`}
       >
         T
       </span>

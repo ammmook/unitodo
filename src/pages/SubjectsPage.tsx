@@ -85,8 +85,8 @@ export function SubjectsPage({
         <LoadingSkeleton variant={activeTab === 'adminUsers' ? 'list' : 'grid'} />
       ) : activeTab === 'mySubjects' ? (
         <ul className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-3.5">
-          {data.subjectProgressList.map((progress) => (
-            <li key={progress.subject.id}>
+          {data.subjectProgressList.map((progress, index) => (
+            <li key={progress.subject.id} className="stagger" style={{ ['--i' as string]: index }}>
               <SubjectCard
                 progress={progress}
                 onAddFirstWork={onAddWorkForSubject}
@@ -98,7 +98,7 @@ export function SubjectsPage({
             <button
               type="button"
               onClick={onAddSubject}
-              className="h-full min-h-[120px] w-full rounded-[18px] border-2 border-dashed border-ink/20 text-[12.5px] font-bold text-ink/75 transition-colors hover:border-ink/40 hover:bg-sand lg:min-h-[150px] lg:rounded-[22px] lg:text-[13px]"
+              className="h-full min-h-[120px] w-full rounded-[18px] border-2 border-dashed border-ink/20 text-[12.5px] font-bold text-ink/75 press transition-colors hover:border-ink/40 hover:bg-sand lg:min-h-[150px] lg:rounded-[22px] lg:text-[13px]"
             >
               + เพิ่มวิชาใหม่
             </button>

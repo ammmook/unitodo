@@ -1,4 +1,5 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
+import { ConfettiBurst } from '../common/ConfettiBurst'
 import type { Subject, Work } from '../../types/todolist'
 import {
   WORK_STATUS_STYLE,
@@ -27,10 +28,12 @@ export const WorkCard = memo(function WorkCard({
 }: WorkCardProps) {
   const overdue = isOverdue(work.dueDate, work.status)
   const isCompleted = work.status === 'completed'
+  // เปลี่ยนเลขทุกครั้งที่ติ๊กเสร็จ เพื่อให้ confetti เล่นใหม่ได้ทุกรอบ
+  const [burst, setBurst] = useState(0)
 
   return (
     <article
-      className={`flex items-start gap-3 rounded-2xl border border-l-5 p-3.5 transition-[transform,box-shadow] lg:items-center lg:gap-3.5 lg:rounded-[18px] lg:p-4 lg:hover:-translate-y-0.5 lg:hover:shadow-[0_14px_26px_-20px_rgba(42,38,34,.6)] ${
+      className={`flex items-start gap-3 rounded-2xl border border-l-5 p-3.5 transition-[transform,box-shadow] lg:items-center lg:gap-3.5 lg:rounded-[18px] lg:p-4 lg:lift ${
         WORK_STATUS_STYLE[work.status].accentClass
       } ${
         overdue
@@ -48,14 +51,22 @@ export const WorkCard = memo(function WorkCard({
             : `ทำเครื่องหมายว่าเสร็จ: ${work.title}`
         }
         aria-pressed={isCompleted}
-        onClick={() => onToggleCompleted(work)}
-        className={`grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-lg font-bold transition-colors lg:h-7 lg:w-7 lg:rounded-[9px] lg:text-sm ${
+        onClick={() => {
+          if (!isCompleted) setBurst((count) => count + 1)
+          onToggleCompleted(work)
+        }}
+        className={`press relative grid h-11 w-11 shrink-0 place-items-center rounded-[13px] text-lg font-bold transition-colors lg:h-7 lg:w-7 lg:rounded-[9px] lg:text-sm ${
           isCompleted
             ? 'bg-done text-white'
             : 'border-2 border-ink/25 bg-white hover:border-done lg:border-ink/30'
         }`}
       >
-        {isCompleted ? '✓' : ''}
+        {isCompleted && (
+          <span key={burst} className="animate-check-pop block">
+            ✓
+          </span>
+        )}
+        {burst > 0 && isCompleted && <ConfettiBurst key={burst} />}
       </button>
 
       <button

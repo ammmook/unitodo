@@ -282,7 +282,7 @@ export default function App() {
         </p>
       )}
 
-      <div className="flex-1">
+      <div key={currentPage} className="animate-page-in flex-1">
         {currentPage === 'dashboard' && (
           <DashboardPage
             data={data}

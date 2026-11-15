@@ -58,7 +58,7 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
         return (
           <article
             key={toast.id}
-            className={`animate-rise pointer-events-auto flex items-center gap-3 rounded-2xl p-3.5 shadow-[0_16px_30px_-22px_rgba(42,38,34,.9)] ${tone.card}`}
+            className={`animate-toast-in pointer-events-auto flex items-center gap-3 rounded-2xl p-3.5 shadow-[0_16px_30px_-22px_rgba(42,38,34,.9)] ${tone.card}`}
           >
             <span
               aria-hidden="true"

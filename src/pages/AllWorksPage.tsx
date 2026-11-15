@@ -140,8 +140,8 @@ export function AllWorksPage({
           </div>
         ) : (
           <ul className="flex flex-col gap-2.5 px-[18px] pb-4 lg:gap-3 lg:px-0 lg:pb-0">
-            {visibleWorks.map((work) => (
-              <li key={work.id}>
+            {visibleWorks.map((work, index) => (
+              <li key={work.id} className="stagger" style={{ ['--i' as string]: index }}>
                 <WorkCard
                   work={work}
                   subject={data.subjectsById.get(work.subjectId)}
@@ -160,7 +160,7 @@ export function AllWorksPage({
         type="button"
         aria-label="เพิ่มงานใหม่"
         onClick={onAddWork}
-        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+96px)] z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-ink text-highlight shadow-[0_12px_24px_-12px_rgba(42,38,34,.85)] transition-transform active:scale-95 sm:h-15 sm:w-15 lg:hidden"
+        className="fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+96px)] z-30 inline-flex h-14 w-14 items-center justify-center rounded-full bg-ink text-highlight shadow-[0_12px_24px_-12px_rgba(42,38,34,.85)] press animate-pulse-ring sm:h-15 sm:w-15 lg:hidden"
       >
         <svg
           viewBox="0 0 24 24"

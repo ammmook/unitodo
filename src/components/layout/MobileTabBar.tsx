@@ -22,17 +22,18 @@ export function MobileTabBar({ currentPage, onNavigate }: MobileTabBarProps) {
             aria-current={isCurrent ? 'page' : undefined}
             title={tab.description}
             onClick={() => onNavigate(tab.page)}
-            className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-[14px] text-[10.5px] transition-colors ${
+            className={`press flex min-h-14 flex-col items-center justify-center gap-1 rounded-[14px] text-[10.5px] transition-colors ${
               isCurrent ? 'bg-highlight-soft font-bold text-ink' : 'font-semibold text-ink/75'
             }`}
           >
             <img
+              key={String(isCurrent)}
               src={tab.iconSrc}
               alt=""
               width={22}
               height={22}
               className={`h-[22px] w-[22px] transition-opacity ${
-                isCurrent ? 'opacity-100' : 'opacity-55'
+                isCurrent ? 'animate-check-pop opacity-100' : 'opacity-55'
               }`}
             />
             {tab.label}

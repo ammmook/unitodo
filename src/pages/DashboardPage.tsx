@@ -56,7 +56,7 @@ export function DashboardPage({
           {/* มือถือเอาสรุปสถานะขึ้นก่อน เพราะอ่านจบในหน้าจอเดียว */}
           <section
             aria-labelledby="status-summary-heading"
-            className="order-first rounded-[20px] border border-ink/10 bg-white p-4 lg:order-none lg:col-start-2 lg:rounded-[22px] lg:p-5 lg:text-center"
+            className="stagger order-first rounded-[20px] border border-ink/10 bg-white p-4 lg:order-none lg:col-start-2 lg:rounded-[22px] lg:p-5 lg:text-center"
           >
             <h2 id="status-summary-heading" className="mb-3.5 hidden text-[14.5px] font-bold lg:block">
               สถานะรวม
@@ -71,7 +71,7 @@ export function DashboardPage({
             </div>
           </section>
 
-          <div className="lg:col-start-1 lg:row-start-1">
+          <div className="stagger lg:col-start-1 lg:row-start-1" style={{ ['--i' as string]: 1 }}>
             <DeadlineTimeline
               works={data.upcomingWorks}
               subjectsById={data.subjectsById}

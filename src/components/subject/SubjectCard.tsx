@@ -22,7 +22,7 @@ export function SubjectCard({ progress, onAddFirstWork, onOpenSubjectWorks }: Su
 
   return (
     <article
-      className={`flex h-full flex-col rounded-[18px] border bg-white p-3.5 lg:rounded-[22px] lg:p-4.5 lg:transition-[transform,box-shadow] lg:hover:-translate-y-[3px] lg:hover:shadow-[0_16px_28px_-22px_rgba(42,38,34,.6)] ${
+      className={`group lift flex h-full flex-col rounded-[18px] border bg-white p-3.5 lg:rounded-[22px] lg:p-4.5 ${
         hasOverdue ? 'border-overdue/30' : 'border-ink/10'
       }`}
     >
@@ -31,7 +31,7 @@ export function SubjectCard({ progress, onAddFirstWork, onOpenSubjectWorks }: Su
           aria-hidden="true"
           className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-sand text-[15px] lg:h-9 lg:w-9 lg:text-base"
         >
-          {subject.emoji}
+          <span className="wiggle-on-hover">{subject.emoji}</span>
         </span>
         <h3 className="min-w-0 truncate text-[13.5px] font-bold lg:text-[15px]">{subject.name}</h3>
       </div>
@@ -67,7 +67,7 @@ export function SubjectCard({ progress, onAddFirstWork, onOpenSubjectWorks }: Su
           </span>
           <span className="block h-[7px] overflow-hidden rounded-full bg-sand lg:h-2">
             <span
-              className={`animate-grow-bar block h-full rounded-full ${barColor}`}
+              className={`animate-grow-bar bar-stripes block h-full rounded-full ${barColor}`}
               style={{ width: `${Math.max(completedRatio * 100, hasOverdue ? 8 : 4)}%` }}
             />
           </span>

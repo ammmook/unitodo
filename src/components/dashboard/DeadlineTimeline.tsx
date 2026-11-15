@@ -54,11 +54,11 @@ export function DeadlineTimeline({
         />
       ) : (
         <ol className="flex flex-col gap-2.5 border-l-2 border-dashed border-ink/15 pl-5 lg:gap-3.5 lg:pl-5.5">
-          {works.map((work) => {
+          {works.map((work, index) => {
             const overdue = isOverdue(work.dueDate, work.status)
             const subject = subjectsById.get(work.subjectId)
             return (
-              <li key={work.id} className="relative">
+              <li key={work.id} className="stagger relative" style={{ ['--i' as string]: index }}>
                 <span
                   aria-hidden="true"
                   className="absolute top-3.5 -left-[27px] h-3.5 w-3.5 rounded-full border-[3px] border-cream lg:border-white"
@@ -74,7 +74,7 @@ export function DeadlineTimeline({
                 <button
                   type="button"
                   onClick={() => onSelectWork(work.id)}
-                  className={`w-full rounded-[15px] border p-3.5 text-left transition-transform lg:flex lg:flex-wrap lg:items-center lg:gap-2.5 lg:rounded-2xl lg:px-4 lg:hover:translate-x-1 ${
+                  className={`w-full rounded-[15px] border p-3.5 text-left lift transition-transform lg:flex lg:flex-wrap lg:items-center lg:gap-2.5 lg:rounded-2xl lg:px-4 lg:hover:translate-x-1 ${
                     overdue
                       ? 'border-overdue/30 bg-overdue-soft'
                       : 'border-ink/10 bg-white lg:bg-cream'

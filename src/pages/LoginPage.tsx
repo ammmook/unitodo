@@ -65,17 +65,34 @@ export function LoginPage({ isGoogleReady, isAuthenticating, authError }: LoginP
     <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-ink p-5">
       <span
         aria-hidden="true"
-        className="absolute -top-40 -right-28 h-[420px] w-[420px] rounded-full bg-highlight/15 lg:h-[520px] lg:w-[520px]"
+        className="animate-blob-a absolute -top-40 -right-28 h-[420px] w-[420px] rounded-full bg-highlight/15 lg:h-[520px] lg:w-[520px]"
       />
       <span
         aria-hidden="true"
-        className="absolute -bottom-32 -left-24 h-[300px] w-[300px] rounded-full bg-progress/20 lg:h-[340px] lg:w-[340px]"
+        className="animate-blob-b absolute -bottom-32 -left-24 h-[300px] w-[300px] rounded-full bg-progress/20 lg:h-[340px] lg:w-[340px]"
       />
+
+      {/* อีโมจิลอยขึ้นช้า ๆ เป็นฉากหลัง */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        {['📘', '✏️', '📚', '⏰', '🎯', '💡', '📝', '🌟'].map((emoji, index) => (
+          <span
+            key={emoji}
+            className="animate-drift-up absolute -bottom-10 text-2xl lg:text-3xl"
+            style={{
+              left: `${6 + index * 12.5}%`,
+              ['--drift-d' as string]: `${8 + (index % 4) * 2.5}s`,
+              animationDelay: `${index * -1.3}s`,
+            }}
+          >
+            {emoji}
+          </span>
+        ))}
+      </div>
 
       <main className="animate-rise relative w-full max-w-[400px] rounded-[26px] bg-cream px-6 py-9 text-center text-ink shadow-[0_40px_70px_-40px_#000] lg:rounded-[28px] lg:px-9 lg:py-10">
         <span
           aria-hidden="true"
-          className="mx-auto mb-4 grid h-[50px] w-[50px] place-items-center rounded-[17px] bg-highlight text-[21px] font-extrabold lg:h-13 lg:w-13 lg:rounded-[18px] lg:text-[22px]"
+          className="animate-float mx-auto mb-4 grid h-[50px] w-[50px] place-items-center rounded-[17px] bg-highlight text-[21px] font-extrabold lg:h-13 lg:w-13 lg:rounded-[18px] lg:text-[22px]"
         >
           T
         </span>

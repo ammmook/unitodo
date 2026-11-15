@@ -35,7 +35,7 @@ export function AppHeader({
                 aria-current={isCurrent ? 'page' : undefined}
                 title={tab.description}
                 onClick={() => onNavigate(tab.page)}
-                className={`rounded-[10px] px-4 py-2.5 text-[13px] transition-colors ${
+                className={`press rounded-[10px] px-4 py-2.5 text-[13px] transition-colors ${
                   isCurrent
                     ? 'bg-cream font-bold text-ink'
                     : 'font-medium text-cream hover:bg-cream/15'
