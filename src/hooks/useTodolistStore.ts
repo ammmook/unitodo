@@ -6,6 +6,7 @@ import {
   type IssuedSession,
   type RequestContext,
 } from '../lib/api'
+import { startLiveSync } from '../lib/liveSync'
 import type { AppUser, NewSubjectDraft, NewWorkDraft, Subject, Work } from '../types/todolist'
 
 /** ใช้เมื่อผู้ใช้ไม่ได้กรอกอีโมจิเอง */
@@ -16,12 +17,19 @@ const CACHE_PREFIX = 'unitodo:snapshot:'
 
 export interface TodolistStore {
   me: AppUser | null
+  /**
+   * บัญชีที่ล็อกอินอยู่จริง — ค้างไว้แม้ตอนสลับไปดูข้อมูลคนอื่น
+   * ทำให้แถบนำทางไม่หายไประหว่างรอข้อมูลของคนที่กำลังจะสวมบท
+   */
+  signedInUser: AppUser | null
   viewingAs: AppUser | null
   users: AppUser[]
   subjects: Subject[]
   works: Work[]
-  /** ยังไม่มีข้อมูลอะไรให้แสดงเลย — ใช้ตัดสินว่าจะโชว์ skeleton ไหม */
+  /** ยังไม่มีข้อมูลของมุมมองนี้ให้แสดงเลย — ต้องขึ้น skeleton */
   isLoading: boolean
+  /** มีคำขอค้างอยู่ (จะมีข้อมูลเก่าค้างบนจอหรือไม่ก็ได้) */
+  isRefreshing: boolean
   loadError: string | null
   refresh: () => void
   addWork: (draft: NewWorkDraft, ownerEmail: string) => Work
@@ -107,6 +115,9 @@ export function useTodolistStore({
   )
   const [loadError, setLoadError] = useState<string | null>(null)
   const [reloadCount, setReloadCount] = useState(0)
+  /** คำขอล่าสุดที่โหลดจบไปแล้ว — ใช้เทียบว่ายังมีคำขอค้างอยู่ไหม โดยไม่ต้องมี state แยก */
+  const [loadedRequestKey, setLoadedRequestKey] = useState<string | null>(null)
+  const [signedInUser, setSignedInUser] = useState<AppUser | null>(() => snapshot?.me ?? null)
 
   // สลับบัญชีที่กำลังดูอยู่ → เปลี่ยนไปใช้ cache ของคนนั้นทันทีระหว่างเรนเดอร์
   // ไม่ให้ข้อมูลของคนเก่าค้างบนจอแม้แค่เฟรมเดียว
@@ -117,6 +128,22 @@ export function useTodolistStore({
     setSnapshot(credentialKey ? readCache(viewAs) : null)
     setLoadError(null)
   }
+
+  // ล็อกอินคนละคน (หรือออกจากระบบ) เท่านั้นที่ล้างตัวตนทิ้ง — สลับ viewAs ไม่ล้าง
+  const [lastCredentialKey, setLastCredentialKey] = useState(credentialKey)
+  if (lastCredentialKey !== credentialKey) {
+    setLastCredentialKey(credentialKey)
+    setSignedInUser(null)
+  }
+
+  // จำว่าเราเป็นใครไว้ ให้แถบนำทางอยู่ต่อได้ตอนสลับไปดูข้อมูลคนอื่น
+  if (snapshot?.me && snapshot.me.email !== signedInUser?.email) {
+    setSignedInUser(snapshot.me)
+  }
+
+  const requestKey = `${credentialKey}|${viewAs ?? 'self'}|${reloadCount}`
+  // มีคำขอค้างอยู่ = คำขอที่โหลดจบล่าสุดยังไม่ใช่คำขอปัจจุบัน (คำนวณตอนเรนเดอร์ ไม่ต้องใช้ effect)
+  const isRefreshing = credentialKey !== '' && loadedRequestKey !== requestKey
 
   // callback/context ล่าสุด เก็บไว้ใน ref เพื่อไม่ให้ effect โหลดข้อมูลซ้ำโดยไม่จำเป็น
   const handlersRef = useRef({ onError, onUnauthenticated, onSessionIssued, onAuthenticated })
@@ -152,9 +179,50 @@ export function useTodolistStore({
         }
         setLoadError(error instanceof Error ? error.message : 'โหลดข้อมูลไม่สำเร็จ')
       })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadedRequestKey(requestKey)
+      })
 
     return () => controller.abort()
-  }, [credentialKey, viewAs, reloadCount])
+  }, [credentialKey, viewAs, reloadCount, requestKey])
+
+  // Neon Realtime: หลังโหลดข้อมูลรอบแรกเสร็จ ให้ตามการเปลี่ยนแปลงจากฐานข้อมูลแบบสด
+  const isSynced = credentialKey !== '' && loadedRequestKey === requestKey
+  useEffect(() => {
+    if (!isSynced || !contextRef.current.sessionToken) return
+
+    let stop: (() => void) | undefined
+    let cancelled = false
+
+    startLiveSync(contextRef.current, {
+      onWorks: (works) =>
+        setSnapshot((current) => {
+          if (!current) return current
+          const next = { ...current, works }
+          writeCache(contextRef.current.viewAs ?? null, next)
+          return next
+        }),
+      onSubjects: (subjects) =>
+        setSnapshot((current) => {
+          if (!current) return current
+          const next = { ...current, subjects }
+          writeCache(contextRef.current.viewAs ?? null, next)
+          return next
+        }),
+      // live ล่มก็ไม่กระทบการใช้งาน — แอปยังทำงานผ่าน API ตามปกติ
+      onFailure: (message) => console.warn('Realtime หยุดทำงาน:', message),
+    })
+      .then((stopSync) => {
+        if (cancelled) stopSync()
+        else stop = stopSync
+      })
+      .catch((error: unknown) => console.warn('เริ่ม Realtime ไม่สำเร็จ:', error))
+
+    return () => {
+      cancelled = true
+      stop?.()
+    }
+  }, [isSynced, requestKey])
 
   const refresh = useCallback(() => setReloadCount((count) => count + 1), [])
 
@@ -294,11 +362,13 @@ export function useTodolistStore({
 
   return {
     me: snapshot?.me ?? null,
+    signedInUser,
     viewingAs: snapshot?.viewingAs ?? null,
     users: snapshot?.users ?? [],
     subjects: snapshot?.subjects ?? [],
     works: snapshot?.works ?? [],
     isLoading: snapshot === null && loadError === null,
+    isRefreshing,
     loadError,
     refresh,
     addWork,

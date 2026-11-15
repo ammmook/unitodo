@@ -8,14 +8,105 @@
     <meta name="description" content="Todolist — จัดสรรเวลาเรียนของเราให้ทันทุกกำหนดส่ง" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      โหลดฟอนต์แบบไม่บล็อกการวาดหน้าจอ — media="print" ทำให้เบราว์เซอร์ไม่รอไฟล์นี้
+      แล้วสลับเป็น all ตอนโหลดเสร็จ · โครงหน้าด้านล่างจึงขึ้นได้ทันทีไม่ต้องรอฟอนต์
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
     <title>Todolist</title>
+
+    <!--
+      โครงหน้าชุดแรกสุด เขียนสไตล์ไว้ในไฟล์นี้เลย ไม่พึ่ง Tailwind หรือ JS bundle
+      จึงขึ้นตั้งแต่เฟรมแรกที่เบราว์เซอร์วาดหน้า ไม่ปล่อยให้เห็นจอขาวจนคิดว่าเว็บพัง
+      React จะมาแทนที่ทั้งก้อนนี้เองตอน mount
+    -->
+    <style>
+      body {
+        margin: 0;
+        background: #fbf7f0;
+        color: #2a2622;
+        font-family: 'Plus Jakarta Sans', 'IBM Plex Sans Thai', system-ui, -apple-system, sans-serif;
+      }
+      @keyframes boot-shimmer {
+        from { background-position: -320px 0; }
+        to { background-position: 320px 0; }
+      }
+      .boot-block {
+        border-radius: 16px;
+        background: linear-gradient(100deg, #f4efe5 30%, #fdfaf4 50%, #f4efe5 70%);
+        background-size: 320px 100%;
+        animation: boot-shimmer 1.2s infinite linear;
+      }
+      .boot-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 16px 18px;
+        background: #2a2622;
+      }
+      .boot-logo {
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 11px;
+        background: #f5c33b;
+        font-weight: 800;
+        font-size: 14px;
+      }
+      .boot-status {
+        margin: 0;
+        padding: 14px 18px 0;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: rgba(42, 38, 34, 0.75);
+      }
+      .boot-body {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin: 12px 18px;
+        padding: 16px;
+        border: 1px solid rgba(42, 38, 34, 0.1);
+        border-radius: 20px;
+        background: #fff;
+      }
+      @media (min-width: 1024px) {
+        .boot-bar { padding: 16px 32px; }
+        .boot-status { padding: 14px 32px 0; }
+        .boot-body { margin: 12px 32px; padding: 22px 24px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-block { animation: none; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-bar">
+        <span aria-hidden="true" class="boot-logo">T</span>
+        <strong style="font-size: 15px; color: #fbf7f0">Todolist</strong>
+      </div>
+      <p class="boot-status" role="status">กำลังโหลดข้อมูลของคุณ…</p>
+      <div class="boot-body" aria-busy="true">
+        <span class="boot-block" style="height: 18px; width: 220px; border-radius: 8px"></span>
+        <span class="boot-block" style="height: 64px; animation-delay: 0.1s"></span>
+        <span class="boot-block" style="height: 64px; animation-delay: 0.2s"></span>
+        <span class="boot-block" style="height: 64px; animation-delay: 0.3s"></span>
+        <span class="boot-block" style="height: 64px; animation-delay: 0.4s"></span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

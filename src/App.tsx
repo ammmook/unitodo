@@ -42,6 +42,8 @@ export default function App() {
   const [term, setTerm] = useState<AcademicTerm>(CURRENT_TERM)
   /** อีเมลของคนที่ admin กำลังสวมบทอยู่ — null คือดูข้อมูลของตัวเอง */
   const [viewAsEmail, setViewAsEmail] = useState<string | null>(null)
+  /** ผู้ใช้ที่เพิ่งกดสวมบท — ใช้เติมหัวจอระหว่างรอข้อมูลของเขาโหลดมา */
+  const [pendingViewAsUser, setPendingViewAsUser] = useState<AppUser | null>(null)
 
   const session = useSession()
   const { signOut, expireSession, acceptIssuedSession, confirmSignedIn, credential } = session
@@ -65,6 +67,7 @@ export default function App() {
     }
     clearSnapshotCache()
     setViewAsEmail(null)
+    setPendingViewAsUser(null)
     resetViewState()
     signOut()
   }, [credential, resetViewState, signOut])
@@ -73,6 +76,7 @@ export default function App() {
     (message?: string) => {
       clearSnapshotCache()
       setViewAsEmail(null)
+      setPendingViewAsUser(null)
       resetViewState()
       expireSession(message ?? 'เซสชันหมดอายุแล้ว กรุณาเข้าสู่ระบบอีกครั้ง')
     },
@@ -195,8 +199,9 @@ export default function App() {
 
   /** admin กดปุ่ม 👁 — สวมบทเป็นผู้ใช้คนนั้นทันที เห็นและแก้ได้ทุกอย่างเหมือนเจ้าตัว */
   const handleViewAsUser = (user: AppUser) => {
-    const isSelf = user.email === store.me?.email
+    const isSelf = user.email === store.signedInUser?.email
     setViewAsEmail(isSelf ? null : user.email)
+    setPendingViewAsUser(isSelf ? null : user)
     resetViewState()
     showToast({
       tone: 'info',
@@ -208,6 +213,7 @@ export default function App() {
 
   const handleExitImpersonation = () => {
     setViewAsEmail(null)
+    setPendingViewAsUser(null)
     resetViewState()
   }
 
@@ -228,21 +234,27 @@ export default function App() {
     )
   }
 
-  // ยังไม่รู้ว่าเราเป็นใคร — โหลดครั้งแรกเท่านั้น ครั้งต่อ ๆ ไปมี cache ให้วาดทันที
-  if (!store.me || !store.viewingAs) {
-    return store.loadError ? (
-      <LoadFailed error={store.loadError} onRetry={store.refresh} onSignOut={handleSignOut} />
-    ) : (
-      <AppShellSkeleton variant={currentPage === 'subjects' ? 'grid' : currentPage === 'works' ? 'list' : 'dashboard'} />
-    )
+  const skeletonVariant =
+    currentPage === 'subjects' ? 'grid' : currentPage === 'works' ? 'list' : 'dashboard'
+
+  if (store.loadError && !store.signedInUser) {
+    return <LoadFailed error={store.loadError} onRetry={store.refresh} onSignOut={handleSignOut} />
   }
 
+  // ยังไม่รู้แม้แต่ว่าเราเป็นใคร — วาดโครงทั้งหน้ารวมแถบนำทาง
+  if (!store.signedInUser) {
+    return <AppShellSkeleton variant={skeletonVariant} />
+  }
+
+  // รู้ตัวตนแล้วแต่ข้อมูลของมุมมองนี้ยังไม่มา (เช่น เพิ่งกดสวมบทเป็นคนอื่น)
+  // เก็บแถบนำทางไว้ แล้วให้เนื้อหาข้างในเป็น skeleton แทน
+  const viewingUser = store.viewingAs ?? pendingViewAsUser ?? store.signedInUser
   const isImpersonating = viewAsEmail !== null
 
   return (
     <div className="flex min-h-dvh flex-col bg-cream">
       {isImpersonating && (
-        <ImpersonationBanner viewingUser={store.viewingAs} onExit={handleExitImpersonation} />
+        <ImpersonationBanner viewingUser={viewingUser} onExit={handleExitImpersonation} />
       )}
 
       <AppHeader
@@ -250,7 +262,7 @@ export default function App() {
         onNavigate={setCurrentPage}
         term={term}
         onTermChange={setTerm}
-        user={store.viewingAs}
+        user={viewingUser}
         onSignOut={handleSignOut}
       />
 
@@ -276,7 +288,7 @@ export default function App() {
             data={data}
             term={term}
             onTermChange={setTerm}
-            user={store.viewingAs}
+            user={viewingUser}
             onSignOut={handleSignOut}
             isLoading={store.isLoading}
             onOpenWork={openWorkDetail}
@@ -308,8 +320,8 @@ export default function App() {
           <SubjectsPage
             data={data}
             term={term}
-            currentUser={store.me}
-            viewingUser={store.viewingAs}
+            currentUser={store.signedInUser}
+            viewingUser={viewingUser}
             allUsers={store.users}
             isLoading={store.isLoading}
             onAddSubject={() => setOpenModal({ kind: 'addSubject' })}
@@ -335,7 +347,7 @@ export default function App() {
       {openModal.kind === 'addSubject' && (
         <AddSubjectModal
           term={term}
-          ownerEmail={store.viewingAs.email}
+          ownerEmail={viewingUser.email}
           isNameTaken={data.isSubjectNameTakenInTerm}
           onClose={closeModal}
           onCreated={handleCreateSubject}

@@ -1,8 +1,9 @@
 import type { AppUser, Subject, Work, WorkStatus, WorkType } from '../types/todolist'
+import type { SealedLiveQuery } from '@neon/realtime/client'
 import { API_URL } from './config'
 
 /**
- * Client คุยกับ Google Apps Script Web App
+ * Client คุยกับ backend (Node + Neon Postgres) ผ่านโปรโตคอลเดียวกับ Apps Script เดิม
  *
  * ส่งด้วย POST + Content-Type: text/plain เพื่อไม่ให้เบราว์เซอร์ยิง preflight (OPTIONS)
  * ซึ่ง Apps Script ตอบไม่ได้ — ประหยัดไปหนึ่ง round-trip ต่อทุกคำขอ
@@ -40,6 +41,13 @@ export type ApiErrorCode =
   | 'UNKNOWN_ACTION'
   | 'BAD_REQUEST'
   | 'NOT_CONFIGURED'
+
+export interface LivePayload {
+  /** URL ของ Neon Realtime */
+  url: string
+  works: SealedLiveQuery<unknown>
+  subjects: SealedLiveQuery<unknown>
+}
 
 export class ApiError extends Error {
   code: ApiErrorCode
@@ -156,6 +164,9 @@ export const api = {
 
   setAdmin: (email: string, isAdmin: boolean, context: RequestContext) =>
     call<{ email: string; isAdmin: boolean }>('setAdmin', { email, isAdmin }, context),
+
+  /** sealed query ของ Neon Realtime สำหรับ subscribe งาน/วิชาของมุมมองปัจจุบัน */
+  live: (context: RequestContext) => call<LivePayload>('live', {}, context),
 
   /** ยกเลิก session ฝั่งเซิร์ฟเวอร์ — token เดิมใช้ไม่ได้อีกแม้จะยังค้างอยู่ที่ไหน */
   logout: (context: RequestContext) => call<{ signedOut: boolean }>('logout', {}, context),

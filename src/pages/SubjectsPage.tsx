@@ -81,7 +81,8 @@ export function SubjectsPage({
       </header>
 
       {isLoading ? (
-        <LoadingSkeleton variant="grid" />
+        // แท็บ Admin เป็นตาราง จึงใช้โครงแบบรายการ ส่วนวิชาเป็นการ์ดใช้โครงแบบตาราง
+        <LoadingSkeleton variant={activeTab === 'adminUsers' ? 'list' : 'grid'} />
       ) : activeTab === 'mySubjects' ? (
         <ul className="grid grid-cols-2 gap-2.5 lg:grid-cols-4 lg:gap-3.5">
           {data.subjectProgressList.map((progress) => (
